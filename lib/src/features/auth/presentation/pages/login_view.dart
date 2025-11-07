@@ -4,14 +4,34 @@ import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
 import '../bloc/auth_state.dart';
 import '../bloc/login_cubit.dart';
 
-class LoginView extends StatelessWidget {
+// ⭐️ 1. Chuyển thành StatefulWidget
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  // ⭐️ 2. Tạo FormKey và Controllers
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController(text: 'emilys');
+  final _passwordController = TextEditingController(text: 'emilyspass');
+  bool _rememberMe = false; // ⭐️ 3. Thêm state cho checkbox
+
+  @override
+  void dispose() {
+    // ⭐️ 4. Hủy các controller
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     // Sử dụng BlocConsumer để vừa lắng nghe state (hiện thông báo) vừa build lại UI
     return Scaffold(
-      appBar: AppBar(title: const Text('Login (Page-View Pattern)')),
+      appBar: AppBar(title: const Text('Login')),
       body: BlocConsumer<LoginCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
@@ -22,87 +42,137 @@ class LoginView extends StatelessWidget {
               ),
             );
           } else if (state is AuthSuccess) {
-            // 2. THAY ĐỔI TẠI ĐÂY
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  // Dùng firstName cho lời chào
-                  'Đăng nhập thành công! Xin chào ${state.loginResponse.firstName}!',
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
-            // 3. ĐIỀU HƯỚNG TỚI HOME
-            // Dùng pushReplacement để người dùng không thể "Back" về màn Login
-            Navigator.of(context).pushReplacement(
-              // Gọi static helper 'route' ta đã tạo
-              HomePage.route(state.loginResponse),
-            );
+            // Khi đăng nhập thủ công thành công,
+            // điều hướng TỚI HOME (thay thế màn Login)
+            Navigator.of(
+              context,
+            ).pushReplacement(HomePage.route(state.loginResponse));
           }
         },
         builder: (context, state) {
           // Tách riêng hàm _buildBody để code gọn hơn
+          // ⭐️ 5. Truyền state vào _buildBody
           return _buildBody(context, state);
         },
       ),
     );
   }
 
+  // ⭐️ 6. Chuyển _buildBody vào trong State
   Widget _buildBody(BuildContext context, AuthState state) {
-    if (state is AuthLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    // Hiển thị loading đè lên form khi đang đăng nhập
+    final bool isLoading = state is AuthLoading;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Icon(Icons.lock_outline, size: 80, color: Colors.blue),
-          const SizedBox(height: 40),
+    // ⭐️ 7. Bọc Form và SingleChildScrollView
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        // Thêm SingleChildScrollView để tránh lỗi pixel khi bàn phím hiện
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Icon(Icons.lock_outline, size: 80, color: Colors.blue),
+            const SizedBox(height: 40),
 
-          // Các text field (Trong thực tế nên tách thành widget riêng nếu phức tạp)
-          TextField(
-            decoration: const InputDecoration(
-              labelText: 'UserName',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.email),
+            // ⭐️ 8. Dùng TextFormField
+            TextFormField(
+              controller: _usernameController, // Dùng controller
+              decoration: const InputDecoration(
+                labelText: 'UserName',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng nhập username';
+                }
+                return null;
+              },
+              readOnly: isLoading, // Không cho sửa khi đang loading
             ),
-            // Để đơn giản ta dùng hardcode, dự án thật dùng Controller
-            controller: TextEditingController(text: 'emilys'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Mật khẩu',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.key),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passwordController, // Dùng controller
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Mật khẩu',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.key),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng nhập mật khẩu';
+                }
+                return null;
+              },
+              readOnly: isLoading, // Không cho sửa khi đang loading
             ),
-            controller: TextEditingController(text: 'emilyspass'),
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 8),
 
-          ElevatedButton(
-            onPressed: () {
-              // Gọi Cubit từ context
-              context.read<LoginCubit>().login('emilys', 'emilyspass');
-            },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+            // ⭐️ 9. Thêm CheckboxListTile
+            CheckboxListTile(
+              title: const Text('Ghi nhớ đăng nhập'),
+              value: _rememberMe,
+              onChanged:
+                  isLoading // Vô hiệu hóa khi đang loading
+                  ? null
+                  : (newValue) {
+                      setState(() {
+                        _rememberMe = newValue ?? false;
+                      });
+                    },
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
             ),
-            child: const Text('ĐĂNG NHẬP', style: TextStyle(fontSize: 18)),
-          ),
+            const SizedBox(height: 16),
 
-          TextButton(
-            onPressed: () {
-              // Test trường hợp lỗi
-              context.read<LoginCubit>().login('eve.holt@reqres.in', '');
-            },
-            child: const Text('Test Đăng nhập lỗi'),
-          ),
-        ],
+            // ⭐️ 10. Cập nhật ElevatedButton
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null // Vô hiệu hóa nút khi đang loading
+                  : () {
+                      // 1. Validate form
+                      if (_formKey.currentState!.validate()) {
+                        // 2. Gọi Cubit với giá trị từ controllers và checkbox
+                        context.read<LoginCubit>().login(
+                          _usernameController.text,
+                          _passwordController.text,
+                          _rememberMe,
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('ĐĂNG NHẬP', style: TextStyle(fontSize: 18)),
+            ),
+
+            TextButton(
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      // Test trường hợp lỗi
+                      context.read<LoginCubit>().login(
+                        'eve.holt@reqres.in',
+                        '',
+                        false,
+                      );
+                    },
+              child: const Text('Test Đăng nhập lỗi'),
+            ),
+          ],
+        ),
       ),
     );
   }

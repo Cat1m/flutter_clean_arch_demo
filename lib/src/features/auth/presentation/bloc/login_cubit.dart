@@ -12,11 +12,11 @@ class LoginCubit extends Cubit<AuthState> {
   // Constructor giờ chỉ cần AuthRepository
   LoginCubit(this._repository) : super(AuthInitial());
 
-  Future<void> login(String email, String password) async {
+  Future<void> login(String email, String password, bool rememberMe) async {
     emit(AuthLoading());
 
     // 1. Gọi Repository
-    final result = await _repository.login(email, password);
+    final result = await _repository.login(email, password, rememberMe);
 
     // 2. Repository đã tự lưu token nếu thành công
     // Cubit chỉ cần emit state

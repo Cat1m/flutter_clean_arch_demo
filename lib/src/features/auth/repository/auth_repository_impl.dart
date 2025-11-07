@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/network/api_service.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
+import 'package:reqres_in/src/core/storage/settings_service.dart';
 
 import '../models/auth_models.dart';
 import 'auth_repository.dart';
@@ -13,24 +14,38 @@ import 'auth_repository.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final ApiService _apiService;
   final SecureStorageService _storageService;
+  final SettingsService _settingsService;
 
-  AuthRepositoryImpl(this._apiService, this._storageService);
+  AuthRepositoryImpl(
+    this._apiService,
+    this._storageService,
+    this._settingsService,
+  );
 
   @override
   Future<Either<Failure, LoginResponse>> login(
     String email,
     String password,
+    bool rememberMe,
   ) async {
     try {
       final loginResponse = await _apiService.login(
         LoginRequest(username: email, password: password, expiresInMins: 30),
       );
 
-      // 2. LƯU CẢ HAI TOKEN (Rất quan trọng)
-      // Dùng SecureStorageService bạn đã cung cấp
-      await _storageService.saveUserToken(loginResponse.accessToken);
-      await _storageService.saveRefreshToken(loginResponse.refreshToken);
-      await _storageService.saveUserData(loginResponse);
+      // ⭐️ CỔNG KIỂM SOÁT NẰM Ở ĐÂY
+      if (rememberMe) {
+        // Nếu "Ghi nhớ", LƯU TẤT CẢ
+        await _storageService.saveUserToken(loginResponse.accessToken);
+        await _storageService.saveRefreshToken(loginResponse.refreshToken);
+        await _storageService.saveUserData(loginResponse);
+        await _settingsService.saveRememberMe(true); // Lưu cài đặt
+      } else {
+        // Nếu KHÔNG "Ghi nhớ", XÓA SẠCH
+        // (để đảm bảo không còn session cũ nào sót lại)
+        await _storageService.clearAllTokens();
+        await _settingsService.saveRememberMe(false); // Lưu cài đặt
+      }
 
       // Thành công: Trả về token (Entity đơn giản là String)
       return Right(loginResponse);
@@ -47,12 +62,24 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
+    // Khi logout, XÓA HẾT
     await _storageService.clearAllTokens();
+    await _settingsService.saveRememberMe(false); // <-- Rất quan trọng
   }
 
   // ⭐️ IMPLEMENT HÀM MỚI
   @override
   Future<Either<Failure, LoginResponse>> checkAuthStatus() async {
+    // ⭐️ CỔNG KIỂM SOÁT SỐ 2 (QUAN TRỌNG NHẤT)
+    // 1. Kiểm tra cài đặt "Ghi nhớ" trước (việc này rất nhanh)
+    final bool rememberMe = _settingsService.getRememberMe();
+
+    if (!rememberMe) {
+      // Nếu user đã chọn KHÔNG GHI NHỚ, ta không cần
+      // gọi API /me tốn kém. Trả về lỗi ngay lập tức.
+      return const Left(ServerFailure("Chế độ 'Ghi nhớ' đang tắt."));
+    }
+
     try {
       // 1. Gọi /me để xác thực token.
       // Giả định rằng Dio Interceptor của bạn sẽ tự động

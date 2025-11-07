@@ -2,6 +2,8 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
+import 'package:reqres_in/src/core/storage/settings_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../network/api_service.dart';
 import '../network/dio_client.dart';
@@ -19,4 +21,12 @@ abstract class RegisterModule {
   // "Khi ai đó cần SecureStorageService, hãy tạo 1 instance"
   @lazySingleton
   SecureStorageService get storageService => SecureStorageService();
+
+  @preResolve
+  @lazySingleton
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+
+  @lazySingleton
+  SettingsService getSettingsService(SharedPreferences prefs) =>
+      SettingsService(prefs);
 }

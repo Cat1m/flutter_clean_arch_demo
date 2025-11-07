@@ -7,7 +7,7 @@ import 'package:reqres_in/src/features/auth/presentation/pages/auth_wrapper_page
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  di.configureDependencies();
+  await di.configureDependencies();
 
   runApp(
     // ⭐️ CUNG CẤP LOGIN CUBIT CHO TOÀN BỘ ỨNG DỤNG

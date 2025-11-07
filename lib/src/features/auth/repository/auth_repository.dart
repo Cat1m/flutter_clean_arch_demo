@@ -3,7 +3,11 @@ import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, LoginResponse>> login(String email, String password);
+  Future<Either<Failure, LoginResponse>> login(
+    String email,
+    String password,
+    bool rememberMe,
+  );
 
   Future<void> logout();
 
