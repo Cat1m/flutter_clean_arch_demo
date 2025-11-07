@@ -21,7 +21,7 @@ class _ApiService implements ApiService {
 
   @override
   Future<LoginResponse> login(LoginRequest body) async {
-    final _extra = <String, dynamic>{'auth_type': AuthType.apiKey};
+    final _extra = <String, dynamic>{'auth_type': AuthType.none};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = body;
@@ -29,7 +29,7 @@ class _ApiService implements ApiService {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/login',
+            '/auth/login',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -39,6 +39,33 @@ class _ApiService implements ApiService {
     late LoginResponse _value;
     try {
       _value = LoginResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<User> getMe() async {
+    final _extra = <String, dynamic>{'auth_type': AuthType.userToken};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<User>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/auth/me',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late User _value;
+    try {
+      _value = User.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

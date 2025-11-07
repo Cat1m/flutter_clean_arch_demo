@@ -17,18 +17,22 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._apiService, this._storageService);
 
   @override
-  Future<Either<Failure, String>> login(String email, String password) async {
+  Future<Either<Failure, LoginResponse>> login(
+    String email,
+    String password,
+  ) async {
     try {
-      final response = await _apiService.login(
-        LoginRequest(email: email, password: password),
+      final loginResponse = await _apiService.login(
+        LoginRequest(username: email, password: password, expiresInMins: 30),
       );
-      // LƯU TOKEN NGAY SAU KHI LOGIN THÀNH CÔNG
-      await _storageService.saveUserToken(response.token);
-      // Nếu backend trả về cả RefreshToken
-      // await _storageService.saveRefreshToken(response.refreshToken);
+
+      // 2. LƯU CẢ HAI TOKEN (Rất quan trọng)
+      // Dùng SecureStorageService bạn đã cung cấp
+      await _storageService.saveUserToken(loginResponse.accessToken);
+      await _storageService.saveRefreshToken(loginResponse.refreshToken);
 
       // Thành công: Trả về token (Entity đơn giản là String)
-      return Right(response.token);
+      return Right(loginResponse);
     } on DioException catch (e) {
       // Reqres trả về lỗi 400 kèm JSON { "error": "..." }
       // Ta lấy message đó ra để hiển thị
