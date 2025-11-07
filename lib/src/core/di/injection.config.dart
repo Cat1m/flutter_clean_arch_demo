@@ -13,10 +13,9 @@ import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
-import '../../features/auth/data/repositories/auth_repository_impl.dart'
-    as _i153;
-import '../../features/auth/domain/repositories/auth_repository.dart' as _i787;
 import '../../features/auth/presentation/bloc/login_cubit.dart' as _i281;
+import '../../features/auth/repository/auth_repository.dart' as _i871;
+import '../../features/auth/repository/auth_repository_impl.dart' as _i932;
 import '../../features/user/presentation/bloc/user_cubit.dart' as _i434;
 import '../../features/user/repository/user_repository.dart' as _i480;
 import '../../features/user/repository/user_repository_impl.dart' as _i57;
@@ -42,14 +41,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i480.UserRepository>(
       () => _i57.UserRepositoryImpl(gh<_i921.ApiService>()),
     );
-    gh.lazySingleton<_i787.AuthRepository>(
-      () => _i153.AuthRepositoryImpl(
+    gh.lazySingleton<_i871.AuthRepository>(
+      () => _i932.AuthRepositoryImpl(
         gh<_i921.ApiService>(),
         gh<_i666.SecureStorageService>(),
       ),
     );
-    gh.factory<_i281.LoginCubit>(
-      () => _i281.LoginCubit(gh<_i787.AuthRepository>()),
+    gh.singleton<_i281.LoginCubit>(
+      () => _i281.LoginCubit(gh<_i871.AuthRepository>()),
     );
     gh.factory<_i434.UserCubit>(
       () => _i434.UserCubit(gh<_i480.UserRepository>()),

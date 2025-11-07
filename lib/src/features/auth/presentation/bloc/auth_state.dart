@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:reqres_in/src/features/auth/data/models/auth_models.dart';
+import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 
 sealed class AuthState extends Equatable {
   const AuthState();

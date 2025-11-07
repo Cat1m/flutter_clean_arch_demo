@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 
 // Định nghĩa các key chúng ta sẽ dùng
 // Dùng const giúp tránh lỗi gõ nhầm
 class _StorageKeys {
   static const String userToken = 'user_token';
   static const String refreshToken = 'refresh_token';
+  static const String userData = 'user_data';
   // Bạn cũng có thể lưu API Key ở đây nếu nó bí mật
 }
 
@@ -35,11 +39,27 @@ class SecureStorageService {
     return _storage.read(key: _StorageKeys.refreshToken);
   }
 
+  Future<void> saveUserData(LoginResponse response) async {
+    // Chuyển đối tượng LoginResponse thành JSON string
+    final jsonString = jsonEncode(response.toJson());
+    await _storage.write(key: _StorageKeys.userData, value: jsonString);
+  }
+
+  Future<LoginResponse?> getUserData() async {
+    final jsonString = await _storage.read(key: _StorageKeys.userData);
+    if (jsonString != null && jsonString.isNotEmpty) {
+      // Chuyển JSON string ngược lại thành đối tượng LoginResponse
+      return LoginResponse.fromJson(jsonDecode(jsonString));
+    }
+    return null;
+  }
+
   // --- Xóa Token (Khi logout) ---
   Future<void> clearAllTokens() async {
     // Xóa từng key một
     await _storage.delete(key: _StorageKeys.userToken);
     await _storage.delete(key: _StorageKeys.refreshToken);
+    await _storage.delete(key: _StorageKeys.userData);
 
     // Hoặc xóa tất cả
     // await _storage.deleteAll();
