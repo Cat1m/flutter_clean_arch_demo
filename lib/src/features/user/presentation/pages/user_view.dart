@@ -4,49 +4,37 @@ import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_cubit.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_state.dart';
 
-class UserView extends StatefulWidget {
+class UserView extends StatelessWidget {
   const UserView({super.key});
-
-  @override
-  State<UserView> createState() => _UserViewState();
-}
-
-class _UserViewState extends State<UserView> {
-  @override
-  void initState() {
-    super.initState();
-    // Gọi fetchUser() ngay khi màn hình được khởi tạo
-    context.read<UserCubit>().fetchUser();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Thông tin Chi Tiết')),
-      body: BlocBuilder<UserCubit, UserState>(
-        builder: (context, state) {
-          // Dùng switch expression (Dart 3)
-          return switch (state) {
-            // Case 1: Đang tải
-            UserLoading() ||
-            UserInitial() => const Center(child: CircularProgressIndicator()),
-
-            // Case 2: Tải thất bại
-            UserFailure(message: final msg) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Text(
-                  'Lỗi: $msg',
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-
-            // Case 3: Tải thành công
-            UserSuccess(user: final user) => _buildSuccessView(context, user),
-          };
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // 2. Đơn giản là gọi lại hàm fetchUser của Cubit
+          // context.read<UserCubit>() sẽ tìm Cubit đã được
+          // cung cấp ở UserPage.
+          // Chúng ta cần 'await' để indicator biết khi nào
+          // việc fetch hoàn thành (Cubit của bạn cần trả về Future)
+          await context.read<UserCubit>().fetchUser();
         },
+        child: BlocBuilder<UserCubit, UserState>(
+          builder: (context, state) {
+            // Dùng switch expression (Dart 3)
+            return switch (state) {
+              // Case 1: Đang tải
+              UserLoading() ||
+              UserInitial() => const Center(child: CircularProgressIndicator()),
+
+              // Case 2: Tải thất bại
+              UserFailure(message: final msg) => _buildErrorView(msg),
+              // Case 3: Tải thành công
+              UserSuccess(user: final user) => _buildSuccessView(context, user),
+            };
+          },
+        ),
       ),
     );
   }
@@ -70,7 +58,6 @@ class _UserViewState extends State<UserView> {
   }
 
   // --- Các Widget con ---
-
   Widget _buildHeader(BuildContext context, User user) {
     return Card(
       elevation: 2,
@@ -209,6 +196,29 @@ class _UserViewState extends State<UserView> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildErrorView(String msg) {
+    // 🚨 LƯU Ý QUAN TRỌNG:
+    // Để RefreshIndicator hoạt động, child của nó PHẢI
+    // là một widget có thể cuộn (scrollable).
+    // Center không cuộn được, nên ta bọc nó trong ListView.
+    return ListView(
+      // Thêm 'physics' để nó luôn cuộn được
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Center(
+            child: Text(
+              'Lỗi: $msg',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

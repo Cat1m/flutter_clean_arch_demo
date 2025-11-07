@@ -11,7 +11,7 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       // 1. Dùng getIt để tạo một instance UserCubit mới
-      create: (context) => getIt<UserCubit>(),
+      create: (context) => getIt<UserCubit>()..fetchUser(),
       // 2. Widget con là UserView
       child: const UserView(),
     );
