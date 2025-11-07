@@ -1,107 +1,76 @@
 // lib/core/network/token_interceptor.dart
 
 import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:reqres_in/src/core/env/env.dart';
+// 1. Import service lưu trữ thật
+import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 
-// TODO: 1. Thay thế bằng service lưu trữ của bạn (SharedPreferences, SecureStorage...)
-// Tạm thời giả lập một service để bạn dễ hình dung
-class MockTokenStorage {
-  String? _accessToken;
-  String? _refreshToken;
-
-  Future<void> saveTokens(String newAccess, String newRefresh) async {
-    _accessToken = newAccess;
-    _refreshToken = newRefresh;
-    if (kDebugMode) {
-      print('--- TOKENS ĐÃ ĐƯỢC LƯU MỚI ---');
-    }
-  }
-
-  Future<String?> getAccessToken() async => _accessToken;
-  Future<String?> getRefreshToken() async => _refreshToken;
-  Future<void> clearTokens() async {
-    _accessToken = null;
-    _refreshToken = null;
-  }
-}
-
-// TODO: 2. Tùy chỉnh class này cho phù hợp
+// TÙY CHỈNH: Đảm bảo class này phù hợp với dự án của bạn
 class TokenInterceptor extends QueuedInterceptor {
-  // Giả lập service lưu trữ token
-  final MockTokenStorage tokenStorage = MockTokenStorage();
+  // 2. Nhận service qua constructor (giống hệt AuthInterceptor)
+  final SecureStorageService _storageService;
+  TokenInterceptor(this._storageService);
 
-  // Tạo một Dio instance riêng CHỈ để gọi API refresh token
+  // 3. Tạo một Dio instance riêng CHỈ để gọi API refresh token
   // Nó không nên có interceptor này để tránh vòng lặp vô hạn
   final Dio _refreshDio = Dio(
     BaseOptions(
       // TODO: 3. Đặt baseUrl của bạn ở đây
-      baseUrl: 'https://api.example.com/api',
+      baseUrl: Env.baseUrl,
     ),
   );
 
-  /// Interceptor này sẽ gắn AccessToken vào MỌI request
-  @override
-  Future<void> onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) async {
-    final accessToken = await tokenStorage.getAccessToken();
+  /// 4. (RẤT QUAN TRỌNG) XÓA BỎ HÀM onREQUEST
+  /// Chúng ta KHÔNG xử lý onRequest ở đây nữa.
+  /// AuthInterceptor đã làm việc này rồi (gắn 'Authorization' hoặc 'x-api-key').
+  /// Vai trò của file này CHỈ LÀ xử lý lỗi 401.
 
-    // Gắn token vào header
-    if (accessToken != null) {
-      options.headers['Authorization'] = 'Bearer $accessToken';
-    }
-    return handler.next(options);
-  }
-
-  /// Interceptor này sẽ xử lý khi API trả về lỗi
+  /// 5. Interceptor này sẽ xử lý khi API trả về lỗi
   @override
   Future<void> onError(
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
     // === Kịch bản 1: Lỗi 401 (AccessToken hết hạn) ===
-    // Chúng ta cần refresh token và thử lại
     if (err.response?.statusCode == 401) {
       if (kDebugMode) {
         print('--- LỖI 401: AccessToken hết hạn ---');
       }
 
-      // Lấy RefreshToken đã lưu
-      final refreshToken = await tokenStorage.getRefreshToken();
+      // 6. Dùng service thật để lấy RefreshToken
+      final refreshToken = await _storageService.getRefreshToken();
       if (refreshToken == null) {
         // Không có refresh token, không thể làm mới -> Đăng xuất
         if (kDebugMode) {
           print('--- Không có RefreshToken, đăng xuất ---');
         }
-        unawaited(tokenStorage.clearTokens());
+        // 7. Dùng service thật để xóa token
+        unawaited(_storageService.clearAllTokens());
         // Cho lỗi 401 đi tiếp, ErrorInterceptor sẽ bắt
         return handler.reject(err);
       }
 
       // === Bắt đầu quá trình Refresh Token ===
-      // (Trong QueuedInterceptor, lock() sẽ tạm dừng các request khác
-      // cho đến khi unlock() được gọi)
       try {
         if (kDebugMode) {
           print('--- Đang gọi API Refresh Token... ---');
         }
 
         // TODO: 4. Chỉnh sửa API call này cho đúng với backend của bạn
-        // GỌI API REFRESH TOKEN
         final response = await _refreshDio.post(
           '/auth/refresh',
           data: {'refreshToken': refreshToken},
         );
 
-        // Giả sử API trả về { "accessToken": "...", "refreshToken": "..." }
         final newAccessToken = response.data['accessToken'] as String;
         final newRefreshToken = response.data['refreshToken'] as String;
 
-        // Lưu token mới
-        await tokenStorage.saveTokens(newAccessToken, newRefreshToken);
+        // 8. Dùng service thật để LƯU token mới
+        // (SecureStorageService lưu 2 token riêng rẽ)
+        await _storageService.saveUserToken(newAccessToken);
+        await _storageService.saveRefreshToken(newRefreshToken);
 
         // Cập nhật header của request VỪA THẤT BẠI
         err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
@@ -111,30 +80,24 @@ class TokenInterceptor extends QueuedInterceptor {
         }
 
         // Thử lại request vừa thất bại với token mới
-        // Dùng Dio của interceptor (không phải _refreshDio)
+        // Dùng một instance Dio mới, sạch
         final dio = Dio(BaseOptions(baseUrl: err.requestOptions.baseUrl));
-        // Thêm các interceptor khác nếu cần, nhưng KHÔNG thêm TokenInterceptor
-        // Hoặc tốt hơn là dùng 1 instance Dio được truyền vào
-
         final retryResponse = await dio.fetch(err.requestOptions);
 
-        // Nếu retry thành công, resolve() và kết thúc
         return handler.resolve(retryResponse);
       } on DioException catch (e) {
         // === Kịch bản 2: Refresh Token THẤT BẠI ===
-        // (Ví dụ: RefreshToken cũng hết hạn, server 500...)
         if (kDebugMode) {
           print('--- LỖI khi đang Refresh Token: $e ---');
         }
-        // Xóa hết token cũ -> Đăng xuất
-        await tokenStorage.clearTokens();
-        // Cho lỗi đi tiếp (có thể là 401, 403, 500...)
+        // 9. Dùng service thật để xóa token
+        await _storageService.clearAllTokens();
         return handler.reject(e);
       }
     }
 
     // === Kịch bản 3: Lỗi không phải 401 ===
-    // (VD: 404, 500, ConnectionFailure...)
+    // (VD: 404, 500...)
     // Chỉ cần cho nó đi qua, ErrorInterceptor sẽ xử lý
     return handler.next(err);
   }

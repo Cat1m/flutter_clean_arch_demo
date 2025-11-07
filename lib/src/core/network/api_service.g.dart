@@ -21,7 +21,7 @@ class _ApiService implements ApiService {
 
   @override
   Future<LoginResponse> login(LoginRequest body) async {
-    final _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{'auth_type': AuthType.apiKey};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = body;

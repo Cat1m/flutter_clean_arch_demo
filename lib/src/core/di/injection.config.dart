@@ -18,6 +18,7 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart'
 import '../../features/auth/domain/repositories/auth_repository.dart' as _i787;
 import '../../features/auth/presentation/bloc/login_cubit.dart' as _i281;
 import '../network/api_service.dart' as _i921;
+import '../storage/secure_storage_service.dart' as _i666;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -29,11 +30,17 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
+    gh.lazySingleton<_i666.SecureStorageService>(
+      () => registerModule.storageService,
+    );
     gh.lazySingleton<_i921.ApiService>(
       () => registerModule.getApiService(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i787.AuthRepository>(
-      () => _i153.AuthRepositoryImpl(gh<_i921.ApiService>()),
+      () => _i153.AuthRepositoryImpl(
+        gh<_i921.ApiService>(),
+        gh<_i666.SecureStorageService>(),
+      ),
     );
     gh.factory<_i281.LoginCubit>(
       () => _i281.LoginCubit(gh<_i787.AuthRepository>()),
