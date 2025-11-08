@@ -21,6 +21,8 @@ import '../../features/user/presentation/bloc/user_cubit.dart' as _i434;
 import '../../features/user/repository/user_repository.dart' as _i480;
 import '../../features/user/repository/user_repository_impl.dart' as _i57;
 import '../network/api_service.dart' as _i921;
+import '../network/dio_client.dart' as _i667;
+import '../network/file_upload_service.dart' as _i307;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
 import 'register_module.dart' as _i291;
@@ -43,6 +45,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i112.SettingsService>(
       () => registerModule.getSettingsService(gh<_i460.SharedPreferences>()),
+    );
+    gh.lazySingleton<_i307.FileUploadService>(
+      () => _i307.FileUploadService(gh<_i667.DioClient>()),
     );
     gh.lazySingleton<_i921.ApiService>(
       () => registerModule.getApiService(gh<_i361.Dio>()),

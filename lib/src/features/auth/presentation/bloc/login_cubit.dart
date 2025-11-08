@@ -22,7 +22,7 @@ class LoginCubit extends Cubit<AuthState> {
     // Cubit chỉ cần emit state
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
-      (response) => emit(AuthSuccess(response)), // Đơn giản, sạch sẽ
+      (response) => emit(AuthSuccess(response)),
     );
   }
 
