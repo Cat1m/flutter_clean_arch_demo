@@ -47,6 +47,33 @@ class _ApiService implements ApiService {
   }
 
   @override
+  Future<RefreshResponse> refresh(RefreshRequest body) async {
+    final _extra = <String, dynamic>{'auth_type': AuthType.none};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = body;
+    final _options = _setStreamType<RefreshResponse>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/auth/refresh',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late RefreshResponse _value;
+    try {
+      _value = RefreshResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<User> getMe() async {
     final _extra = <String, dynamic>{'auth_type': AuthType.userToken};
     final queryParameters = <String, dynamic>{};

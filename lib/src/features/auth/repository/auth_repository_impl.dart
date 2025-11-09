@@ -29,16 +29,22 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       final loginResponse = await _apiService.login(
-        LoginRequest(username: email, password: password, expiresInMins: 30),
+        LoginRequest(username: email, password: password, expiresInMins: 1),
       );
 
       if (rememberMe) {
+        // --- PHIÊN ĐĂNG NHẬP "VĨNH VIỄN" ---
         await _storageService.saveUserToken(loginResponse.accessToken);
         await _storageService.saveRefreshToken(loginResponse.refreshToken);
         await _storageService.saveUserData(loginResponse);
         await _settingsService.saveRememberMe(true);
       } else {
+        // --- PHIÊN ĐĂNG NHẬP "TẠM THỜI" ---
+        // 1. Dọn dẹp mọi token cũ
         await _storageService.clearAllTokens();
+        // 2. Chỉ lưu accessToken cho phiên hiện tại
+        await _storageService.saveUserToken(loginResponse.accessToken);
+        // 3. Đánh dấu là không "nhớ"
         await _settingsService.saveRememberMe(false);
       }
       return Right(loginResponse);

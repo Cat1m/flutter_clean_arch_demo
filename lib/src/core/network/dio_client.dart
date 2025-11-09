@@ -10,6 +10,7 @@ import 'package:reqres_in/src/core/network/auth_interceptor.dart';
 import 'package:reqres_in/src/core/network/error_interceptor.dart';
 // ignore: unused_import
 import 'package:reqres_in/src/core/network/token_interceptor.dart';
+import 'package:reqres_in/src/core/service/auth_event_service.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 
 class DioClient {
@@ -27,7 +28,7 @@ class DioClient {
   // ĐÂY LÀ CÔNG TẮC CỦA BẠN:
   // - true: Dùng _urlDev (chỉ khi đang debug)
   // - false: Dùng Env.baseUrl (mặc định)
-  static const bool _useDevUrl = true;
+  static const bool _useDevUrl = false;
   // -----------------------------------------------------------------
 
   Dio get dio {
@@ -53,10 +54,11 @@ class DioClient {
     );
 
     final storageService = getIt<SecureStorageService>();
+    final authEventService = getIt<AuthEventService>();
 
     _dio!.interceptors.addAll([
       AuthInterceptor(storageService),
-      TokenInterceptor(storageService),
+      TokenInterceptor(storageService, authEventService),
       ErrorInterceptor(),
     ]);
 

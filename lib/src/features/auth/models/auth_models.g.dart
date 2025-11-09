@@ -45,3 +45,27 @@ Map<String, dynamic> _$LoginResponseToJson(_LoginResponse instance) =>
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
     };
+
+_RefreshRequest _$RefreshRequestFromJson(Map<String, dynamic> json) =>
+    _RefreshRequest(
+      refreshToken: json['refreshToken'] as String,
+      expiresInMins: (json['expiresInMins'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$RefreshRequestToJson(_RefreshRequest instance) =>
+    <String, dynamic>{
+      'refreshToken': instance.refreshToken,
+      'expiresInMins': instance.expiresInMins,
+    };
+
+_RefreshResponse _$RefreshResponseFromJson(Map<String, dynamic> json) =>
+    _RefreshResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+    );
+
+Map<String, dynamic> _$RefreshResponseToJson(_RefreshResponse instance) =>
+    <String, dynamic>{
+      'accessToken': instance.accessToken,
+      'refreshToken': instance.refreshToken,
+    };

@@ -9,14 +9,14 @@ import 'package:path/path.dart' as path;
 
 // 1. Đảm bảo import đúng Env và DioClient của bạn
 import 'package:reqres_in/src/core/env/env.dart';
-import 'package:reqres_in/src/core/network/dio_client.dart';
 
+//todo: chưa thêm dio đã cấu hình vào á!
 @lazySingleton // Đăng ký với GetIt/Injectable
 class FileUploadService {
   final Dio _dio; // Dùng instance Dio đã cấu hình
 
   // Constructor nhận DioClient
-  FileUploadService(DioClient dioClient) : _dio = dioClient.dio;
+  FileUploadService(Dio dioClient) : _dio = dioClient;
 
   // --- Các hằng số cho server file ---
   static final String _fileServerBaseUrl = Env.fileServer;

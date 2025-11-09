@@ -43,3 +43,28 @@ abstract class LoginResponse with _$LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) =>
       _$LoginResponseFromJson(json);
 }
+
+@freezed
+abstract class RefreshRequest with _$RefreshRequest {
+  const factory RefreshRequest({
+    /// Refresh token bạn đã lưu từ lúc đăng nhập
+    required String refreshToken,
+
+    /// (Tùy chọn) Thời gian hết hạn cho accessToken MỚI (tính bằng phút)
+    int? expiresInMins,
+  }) = _RefreshRequest;
+
+  factory RefreshRequest.fromJson(Map<String, dynamic> json) =>
+      _$RefreshRequestFromJson(json);
+}
+
+@freezed
+abstract class RefreshResponse with _$RefreshResponse {
+  const factory RefreshResponse({
+    required String accessToken,
+    required String refreshToken,
+  }) = _RefreshResponse;
+
+  factory RefreshResponse.fromJson(Map<String, dynamic> json) =>
+      _$RefreshResponseFromJson(json);
+}

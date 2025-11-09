@@ -16,12 +16,12 @@ abstract class ApiService {
   @POST('/auth/login')
   Future<LoginResponse> login(@Body() LoginRequest body);
 
+  @noAuth
+  @POST('/auth/refresh')
+  Future<RefreshResponse> refresh(@Body() RefreshRequest body);
+
   // --- User Endpoints (Để test) ---
   @userToken
   @GET('/auth/me')
   Future<User> getMe();
-
-  // --- User Endpoints ---
-  // @GET('/users/{id}')
-  // Future<UserResponse> getUser(@Path('id') int id);
 }
