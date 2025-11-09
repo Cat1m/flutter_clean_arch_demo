@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
 import '../bloc/auth_state.dart';
 import '../bloc/login_cubit.dart';
 
@@ -41,12 +40,6 @@ class _LoginViewState extends State<LoginView> {
                 backgroundColor: Colors.red,
               ),
             );
-          } else if (state is AuthSuccess) {
-            // Khi đăng nhập thủ công thành công,
-            // điều hướng TỚI HOME (thay thế màn Login)
-            Navigator.of(
-              context,
-            ).pushReplacement(HomePage.route(state.loginResponse));
           }
         },
         builder: (context, state) {

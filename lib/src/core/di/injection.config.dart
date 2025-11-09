@@ -11,6 +11,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:go_router/go_router.dart' as _i583;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
@@ -20,6 +21,7 @@ import '../../features/auth/repository/auth_repository_impl.dart' as _i932;
 import '../../features/user/presentation/bloc/user_cubit.dart' as _i434;
 import '../../features/user/repository/user_repository.dart' as _i480;
 import '../../features/user/repository/user_repository_impl.dart' as _i57;
+import '../navigation/router_module.dart' as _i358;
 import '../network/api_service.dart' as _i921;
 import '../network/file_upload_service.dart' as _i307;
 import '../service/auth_event_service.dart' as _i149;
@@ -35,6 +37,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) async {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
+    final routerModule = _$RouterModule();
     gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
     gh.lazySingleton<_i666.SecureStorageService>(
       () => registerModule.storageService,
@@ -43,6 +46,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
+    gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
     gh.lazySingleton<_i149.AuthEventService>(() => _i149.AuthEventService());
     gh.lazySingleton<_i112.SettingsService>(
       () => registerModule.getSettingsService(gh<_i460.SharedPreferences>()),
@@ -77,3 +81,5 @@ extension GetItInjectableX on _i174.GetIt {
 }
 
 class _$RegisterModule extends _i291.RegisterModule {}
+
+class _$RouterModule extends _i358.RouterModule {}

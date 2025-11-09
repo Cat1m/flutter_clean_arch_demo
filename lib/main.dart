@@ -1,23 +1,32 @@
 // main.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:reqres_in/src/core/di/injection.dart' as di;
-import 'package:reqres_in/src/core/navigation/navigation_service.dart';
-
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
-import 'package:reqres_in/src/features/auth/presentation/pages/auth_wrapper_page.dart';
 
 void main() async {
+  // 1. Đảm bảo Flutter đã sẵn sàng
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Cấu hình DI (quan trọng)
+  // Bước này sẽ tạo ra LoginCubit (singleton)
+  // VÀ GoRouter (lazySingleton)
+  // VÀ liên kết chúng qua refreshListenable
   await di.configureDependencies();
 
-  runApp(
-    BlocProvider(
-      // Lấy instance singleton VÀ GỌI HÀM KIỂM TRA NGAY LẬP TỨC
-      create: (context) => di.getIt<LoginCubit>()..checkAuthStatus(),
-      child: const MyApp(),
-    ),
-  );
+  // 3. Kích hoạt logic auth (quan trọng)
+  // Gọi hàm này NGAY LẬP TỨC.
+  // GoRouter (đã được tạo ở bước 2) đang lắng nghe.
+  // Nó sẽ nhận state (ví dụ: AuthLoading -> AuthInitial)
+  // và quyết định route đầu tiên TRƯỚC KHI app kịp hiển thị.
+  unawaited(di.getIt<LoginCubit>().checkAuthStatus());
+
+  // 4. Chạy app
+  // Không cần BlocProvider bọc ở đây nữa.
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -25,12 +34,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // Lấy instance GoRouter đã được cấu hình từ getIt
+    final router = di.getIt<GoRouter>();
+
+    // 5. Sử dụng MaterialApp.router
+    return MaterialApp.router(
       title: 'Clean Arch Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      navigatorKey: navigatorKey,
-      // Truyền repository vào LoginPage
-      home: const AuthWrapperPage(),
+
+      // 6. Cung cấp cấu hình router
+      routerConfig: router,
+
+      // 7. Cung cấp LoginCubit (singleton) cho cây widget
+      // Mục đích: Để các trang con (như LoginPage, SessionExpiredPage)
+      // có thể gọi hàm bằng `context.read<LoginCubit>().login()`
+      builder: (context, child) {
+        return BlocProvider.value(
+          value: di.getIt<LoginCubit>(),
+          // child! chính là trang mà GoRouter quyết định hiển thị
+          child: child!,
+        );
+      },
     );
   }
 }

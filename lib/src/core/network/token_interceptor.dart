@@ -42,7 +42,13 @@ class TokenInterceptor extends QueuedInterceptor {
 
         _authEventService.notifySessionExpired();
 
-        return handler.reject(err);
+        return handler.resolve(
+          Response(
+            requestOptions: err.requestOptions,
+            statusCode: 401,
+            statusMessage: 'Token expired. Handled by Interceptor.',
+          ),
+        );
       }
 
       // === Bắt đầu quá trình Refresh Token ===
@@ -104,7 +110,15 @@ class TokenInterceptor extends QueuedInterceptor {
 
         _authEventService.notifySessionExpired();
         // Từ chối request gốc với lỗi của việc refresh
-        return handler.reject(e);
+        // Tương tự, "nuốt" lỗi khi REFRESH thất bại.
+        // KHÔNG reject(e).
+        return handler.resolve(
+          Response(
+            requestOptions: err.requestOptions,
+            statusCode: e.response?.statusCode ?? 401,
+            statusMessage: 'Refresh token failed. Handled by Interceptor.',
+          ),
+        );
       }
     }
 

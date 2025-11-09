@@ -24,3 +24,7 @@ class AuthFailure extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+class AuthSessionExpired extends AuthState {
+  const AuthSessionExpired();
+}

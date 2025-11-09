@@ -1,12 +1,8 @@
 // lib/src/features/auth/presentation/bloc/login_cubit.dart
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/navigation/navigation_service.dart';
 import 'package:reqres_in/src/core/service/auth_event_service.dart';
-import 'package:reqres_in/src/core/widgets/session_expired_dialog.dart';
 import '../../repository/auth_repository.dart';
 import 'auth_state.dart';
 // KHÔNG CẦN import storage service ở đây nữa
@@ -23,31 +19,11 @@ class LoginCubit extends Cubit<AuthState> {
   }
 
   void _listenToAuthEvents() {
-    // Lắng nghe stream từ service
     _authEventSubscription = _authEventService.onSessionExpired.listen((_) {
-      // Khi Interceptor báo lỗi, phát ra state mới
-      // 1. Thay vì emit state, hãy lấy context từ GlobalKey
-      final navigatorContext = navigatorKey.currentContext;
-
-      // 2. Kiểm tra xem context có tồn tại không
-      if (navigatorContext != null) {
-        // 3. Hiển thị dialog TRỰC TIẾP từ Cubit
-        showSessionExpiredDialog(
-          // ignore: use_build_context_synchronously
-          context: navigatorContext,
-          title: 'Phiên đăng nhập hết hạn',
-          message:
-              'Phiên đăng nhập đã hết hạn hoặc có lỗi xảy ra.\nVui lòng đăng nhập lại.',
-          onConfirm: () {
-            // 4. Tắt dialog (dùng context của dialog)
-            Navigator.of(navigatorContext).pop();
-
-            // 5. GỌI HÀM LOGOUT CỦA CHÍNH CUBIT NÀY
-            // (Không cần emit state AuthSessionExpired nữa)
-            logout();
-          },
-        );
-      }
+      // --- THAY ĐỔI LỚN ---
+      // Xóa hết logic dialog/navigatorKey
+      // Chỉ cần emit state. GoRouter sẽ tự bắt lấy.
+      emit(const AuthSessionExpired());
     });
   }
 
