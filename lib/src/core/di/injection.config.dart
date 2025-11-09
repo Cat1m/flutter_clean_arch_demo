@@ -25,6 +25,7 @@ import '../navigation/router_module.dart' as _i358;
 import '../network/api_service.dart' as _i921;
 import '../network/file_upload_service.dart' as _i307;
 import '../service/auth_event_service.dart' as _i149;
+import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
 import 'register_module.dart' as _i291;
@@ -48,6 +49,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
     gh.lazySingleton<_i149.AuthEventService>(() => _i149.AuthEventService());
+    gh.lazySingleton<_i724.NetworkService>(() => _i724.NetworkService());
     gh.lazySingleton<_i112.SettingsService>(
       () => registerModule.getSettingsService(gh<_i460.SharedPreferences>()),
     );

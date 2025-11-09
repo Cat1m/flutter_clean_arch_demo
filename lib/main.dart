@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reqres_in/src/core/di/injection.dart' as di;
+import 'package:reqres_in/src/core/widgets/network_snackbar_listener.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
 
 void main() async {
@@ -49,10 +50,14 @@ class MyApp extends StatelessWidget {
       // Mục đích: Để các trang con (như LoginPage, SessionExpiredPage)
       // có thể gọi hàm bằng `context.read<LoginCubit>().login()`
       builder: (context, child) {
+        // Bọc child trong BlocProvider (như code cũ)
         return BlocProvider.value(
           value: di.getIt<LoginCubit>(),
-          // child! chính là trang mà GoRouter quyết định hiển thị
-          child: child!,
+          // ⭐️ Bọc BlocProvider bằng NetworkSnackbarListener
+          child: NetworkSnackbarListener(
+            // child! (từ GoRouter) sẽ được truyền vào
+            child: child!,
+          ),
         );
       },
     );
