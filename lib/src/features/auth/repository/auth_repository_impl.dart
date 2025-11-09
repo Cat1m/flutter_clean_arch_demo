@@ -29,7 +29,11 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       final loginResponse = await _apiService.login(
-        LoginRequest(username: email, password: password, expiresInMins: 1),
+        LoginRequest(
+          username: email,
+          password: password,
+          //expiresInMins: 1 //! test thôi mặc định 60p rồi
+        ),
       );
 
       if (rememberMe) {
