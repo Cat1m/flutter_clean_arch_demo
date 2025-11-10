@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:reqres_in/src/core/network/auth_type.dart';
+import 'package:reqres_in/src/features/quote/models/quote_model.dart';
 import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:retrofit/retrofit.dart';
 // Import Models từ các features cần thiết (hoặc để models chung ở core nếu muốn)
@@ -24,4 +25,9 @@ abstract class ApiService {
   @userToken
   @GET('/auth/me')
   Future<User> getMe();
+
+  // --- Quote Endpoints ---
+  @noAuth
+  @GET('/quotes/random')
+  Future<QuoteModel> getRandomQuote();
 }

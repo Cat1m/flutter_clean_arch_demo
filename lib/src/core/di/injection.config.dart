@@ -18,6 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart' as _i460;
 import '../../features/auth/presentation/bloc/login_cubit.dart' as _i281;
 import '../../features/auth/repository/auth_repository.dart' as _i871;
 import '../../features/auth/repository/auth_repository_impl.dart' as _i932;
+import '../../features/quote/cubit/quote_cubit.dart' as _i422;
+import '../../features/quote/repositories/quote_repository.dart' as _i48;
+import '../../features/quote/repositories/quote_repository_impl.dart' as _i922;
 import '../../features/user/presentation/bloc/user_cubit.dart' as _i434;
 import '../../features/user/repository/user_repository.dart' as _i480;
 import '../../features/user/repository/user_repository_impl.dart' as _i57;
@@ -55,6 +58,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i921.ApiService>(
       () => registerModule.getApiService(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i48.QuoteRepository>(
+      () => _i922.QuoteRepositoryImpl(gh<_i921.ApiService>()),
+    );
+    gh.factory<_i422.QuoteCubit>(
+      () => _i422.QuoteCubit(gh<_i48.QuoteRepository>()),
     );
     gh.lazySingleton<_i871.AuthRepository>(
       () => _i932.AuthRepositoryImpl(
