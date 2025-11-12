@@ -55,6 +55,7 @@ dependencies:
   connectivity_plus: ^7.0.0
   rxdart: ^0.28.0
   another_flushbar: ^1.12.32
+  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:

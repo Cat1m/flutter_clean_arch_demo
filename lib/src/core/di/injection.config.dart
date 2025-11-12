@@ -31,6 +31,7 @@ import '../service/auth_event_service.dart' as _i149;
 import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
+import '../theme/theme_manager/theme_cubit.dart' as _i381;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -77,6 +78,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i871.AuthRepository>(),
         gh<_i149.AuthEventService>(),
       ),
+    );
+    gh.lazySingleton<_i381.ThemeCubit>(
+      () => _i381.ThemeCubit(gh<_i112.SettingsService>()),
     );
     gh.lazySingleton<_i307.FileUploadService>(
       () => _i307.FileUploadService(gh<_i361.Dio>()),

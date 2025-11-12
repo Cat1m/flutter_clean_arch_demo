@@ -1,25 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // <-- Thêm import
 import 'package:go_router/go_router.dart';
+import 'package:reqres_in/src/core/theme/extensions/app_theme_extensions.dart';
+import 'package:reqres_in/src/core/theme/theme_manager/theme_cubit.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
-// 1. Import widget quote mới
 import 'package:reqres_in/src/features/quote/widgets/random_quote_widget.dart';
 
 class HomeView extends StatelessWidget {
-  // Nhận dữ liệu (giữ nguyên)
   final LoginResponse userData;
 
   const HomeView({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context) {
+    // Lấy TextTheme TỪ AppTheme (giờ đã nhất quán)
     final textTheme = Theme.of(context).textTheme;
 
-    // Toàn bộ UI cũ được giữ nguyên ở đây
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trang chủ'),
+        // title: const Text('Trang chủ'), (Đã có trong AppAppBarTheme)
         automaticallyImplyLeading: false,
         actions: [
+          // ⭐️ Nút chuyển Theme (Thêm mới)
+          IconButton(
+            icon: const Icon(Icons.brightness_6_outlined),
+            tooltip: 'Đổi sáng/tối',
+            onPressed: () {
+              // 1. Lấy cubit
+              final cubit = context.read<ThemeCubit>();
+              // 2. Lấy state hiện tại
+              final currentMode = cubit.state;
+              // 3. Chuyển đổi (ví dụ đơn giản)
+              final newMode = currentMode == ThemeMode.light
+                  ? ThemeMode.dark
+                  : ThemeMode.light;
+              // 4. Gọi hàm
+              cubit.setThemeMode(newMode);
+            },
+          ),
           // Nút Profile
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -40,7 +58,12 @@ class HomeView extends StatelessWidget {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          // ⭐️ Dọn dẹp: Dùng token spacing từ ThemeExtension
+          padding: EdgeInsets.all(
+            Theme.of(
+              context,
+            ).extension<AppThemeExtension>()!.spacing.xl, // 24.0
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -48,33 +71,49 @@ class HomeView extends StatelessWidget {
                 radius: 60,
                 backgroundImage: NetworkImage(userData.image),
               ),
-              const SizedBox(height: 24),
+              // ⭐️ Dọn dẹp: Dùng token spacing
+              SizedBox(
+                height: Theme.of(
+                  context,
+                ).extension<AppThemeExtension>()!.spacing.xl, // 24.0
+              ),
               Text(
                 'Chào mừng trở lại,',
-                style: textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey[700],
-                ),
+                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
+                // headlineSmall (24px, grey900)
+                style: textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
+              // ⭐️ Dọn dẹp: Dùng token spacing
+              SizedBox(
+                height: Theme.of(
+                  context,
+                ).extension<AppThemeExtension>()!.spacing.xs, // 8.0
+              ),
               Text(
                 '${userData.firstName} ${userData.lastName}',
-                style: textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                ),
+                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
+                // headlineLarge (32px, primary color)
+                style: textTheme.headlineLarge,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              // ⭐️ Dọn dẹp: Dùng token spacing
+              SizedBox(
+                height: Theme.of(
+                  context,
+                ).extension<AppThemeExtension>()!.spacing.xs, // 8.0
+              ),
               Text(
                 '@${userData.username}',
-                style: textTheme.titleMedium?.copyWith(
+                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
+                // bodySmall (12px, grey700)
+                style: textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
-                  color: Colors.grey[600],
                 ),
               ),
 
-              // 2. Thêm widget quote vào đây
-              const SizedBox(height: 48),
+              // 2. Thêm widget quote
+              // ⭐️ Dọn dẹp: Dùng token spacing
+              const SizedBox(height: 48), // (Tạm giữ 48px)
               const RandomQuoteWidget(),
             ],
           ),

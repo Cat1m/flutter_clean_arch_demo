@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// ⭐️ Dọn dẹp: Import AppThemeExtension
+import 'package:reqres_in/src/core/theme/extensions/app_theme_extensions.dart';
 import '../bloc/auth_state.dart';
 import '../bloc/login_cubit.dart';
 
-// ⭐️ 1. Chuyển thành StatefulWidget
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -12,15 +13,14 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  // ⭐️ 2. Tạo FormKey và Controllers
   final _formKey = GlobalKey<FormState>();
+  // Giữ nguyên controller
   final _usernameController = TextEditingController(text: 'emilys');
   final _passwordController = TextEditingController(text: 'emilyspass');
-  bool _rememberMe = false; // ⭐️ 3. Thêm state cho checkbox
+  bool _rememberMe = false;
 
   @override
   void dispose() {
-    // ⭐️ 4. Hủy các controller
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -28,7 +28,6 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    // Sử dụng BlocConsumer để vừa lắng nghe state (hiện thông báo) vừa build lại UI
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: BlocConsumer<LoginCubit, AuthState>(
@@ -36,45 +35,55 @@ class _LoginViewState extends State<LoginView> {
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
+                content: Text(
+                  state.message,
+                  // ⭐️ Dọn dẹp: Dùng màu chữ onErrr
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onError,
+                  ),
+                ),
+                // ⭐️ Dọn dẹp: Dùng màu error từ theme
+                backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
           }
         },
         builder: (context, state) {
-          // Tách riêng hàm _buildBody để code gọn hơn
-          // ⭐️ 5. Truyền state vào _buildBody
           return _buildBody(context, state);
         },
       ),
     );
   }
 
-  // ⭐️ 6. Chuyển _buildBody vào trong State
   Widget _buildBody(BuildContext context, AuthState state) {
-    // Hiển thị loading đè lên form khi đang đăng nhập
     final bool isLoading = state is AuthLoading;
+    // ⭐️ Dọn dẹp: Lấy textTheme và theme extension
+    final textTheme = Theme.of(context).textTheme;
+    final spacing = Theme.of(context).extension<AppThemeExtension>()!.spacing;
 
-    // ⭐️ 7. Bọc Form và SingleChildScrollView
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
-        // Thêm SingleChildScrollView để tránh lỗi pixel khi bàn phím hiện
-        padding: const EdgeInsets.all(24.0),
+        // ⭐️ Dọn dẹp: Dùng token spacing xl (24.0)
+        padding: EdgeInsets.all(spacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.lock_outline, size: 80, color: Colors.blue),
-            const SizedBox(height: 40),
+            Icon(
+              Icons.lock_outline,
+              size: 80,
+              // ⭐️ Dọn dẹp: Dùng màu primary
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 40), // (Tạm giữ 40px)
 
-            // ⭐️ 8. Dùng TextFormField
             TextFormField(
-              controller: _usernameController, // Dùng controller
+              controller: _usernameController,
+              // ⭐️ Dọn dẹp: Để AppTheme.inputDecorationTheme tự xử lý!
+              // Không cần 'border: OutlineInputBorder()' nữa.
               decoration: const InputDecoration(
                 labelText: 'UserName',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.person_outline),
               ),
               validator: (value) {
@@ -83,15 +92,16 @@ class _LoginViewState extends State<LoginView> {
                 }
                 return null;
               },
-              readOnly: isLoading, // Không cho sửa khi đang loading
+              readOnly: isLoading,
             ),
-            const SizedBox(height: 16),
+            // ⭐️ Dọn dẹp: Dùng token spacing m (16.0)
+            SizedBox(height: spacing.m),
             TextFormField(
-              controller: _passwordController, // Dùng controller
+              controller: _passwordController,
               obscureText: true,
+              // ⭐️ Dọn dẹp: Để AppTheme.inputDecorationTheme tự xử lý!
               decoration: const InputDecoration(
                 labelText: 'Mật khẩu',
-                border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.key),
               ),
               validator: (value) {
@@ -100,35 +110,35 @@ class _LoginViewState extends State<LoginView> {
                 }
                 return null;
               },
-              readOnly: isLoading, // Không cho sửa khi đang loading
+              readOnly: isLoading,
             ),
-            const SizedBox(height: 8),
+            // ⭐️ Dọn dẹp: Dùng token spacing xs (8.0)
+            SizedBox(height: spacing.xs),
 
-            // ⭐️ 9. Thêm CheckboxListTile
             CheckboxListTile(
-              title: const Text('Ghi nhớ đăng nhập'),
+              // ⭐️ Dọn dẹp: Dùng style từ theme
+              title: Text('Ghi nhớ đăng nhập', style: textTheme.bodyLarge),
               value: _rememberMe,
-              onChanged:
-                  isLoading // Vô hiệu hóa khi đang loading
+              onChanged: isLoading
                   ? null
                   : (newValue) {
                       setState(() {
                         _rememberMe = newValue ?? false;
                       });
                     },
+              // ⭐️ Dọn dẹp: Dùng màu primary (tự động)
+              // activeColor: Theme.of(context).colorScheme.primary,
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
-            const SizedBox(height: 16),
+            // ⭐️ Dọn dẹp: Dùng token spacing m (16.0)
+            SizedBox(height: spacing.m),
 
-            // ⭐️ 10. Cập nhật ElevatedButton
             ElevatedButton(
               onPressed: isLoading
-                  ? null // Vô hiệu hóa nút khi đang loading
+                  ? null
                   : () {
-                      // 1. Validate form
                       if (_formKey.currentState!.validate()) {
-                        // 2. Gọi Cubit với giá trị từ controllers và checkbox
                         context.read<LoginCubit>().login(
                           _usernameController.text,
                           _passwordController.text,
@@ -136,32 +146,36 @@ class _LoginViewState extends State<LoginView> {
                         );
                       }
                     },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+              // ⭐️ Dọn dẹp: Xóa 'style'
+              // AppTheme.elevatedButtonTheme sẽ tự động
+              // áp dụng padding, bo góc (radius.full) và textStyle.
               child: isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        // ⭐️ Dọn dẹp: Dùng màu onPrimary
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
-                  : const Text('ĐĂNG NHẬP', style: TextStyle(fontSize: 18)),
+                  // ⭐️ Dọn dẹp: Xóa 'style'. Nút sẽ tự
+                  // dùng 'labelLarge' từ theme.
+                  : const Text('ĐĂNG NHẬP'),
             ),
 
             TextButton(
               onPressed: isLoading
                   ? null
                   : () {
-                      // Test trường hợp lỗi
                       context.read<LoginCubit>().login(
                         'eve.holt@reqres.in',
-                        '',
+                        '', // Lỗi thiếu pass
                         false,
                       );
                     },
+              // ⭐️ Dọn dẹp: Không cần style
+              // AppTheme.textButtonTheme sẽ tự động đổi màu chữ
               child: const Text('Test Đăng nhập lỗi'),
             ),
           ],
