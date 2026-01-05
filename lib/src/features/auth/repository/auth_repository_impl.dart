@@ -55,16 +55,21 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // ✅ SỬA ĐỔI CHUẨN (ÁP DỤNG CHO MỌI HÀM)
     } on DioException catch (e) {
-      // 1. Kiểm tra xem ErrorInterceptor có gửi "Failure" không
+      // Nếu Interceptor đã biến nó thành Failure rồi thì dùng luôn
       if (e.error is Failure) {
         return Left(e.error as Failure);
-      } else {
-        // 2. Nếu không phải Failure, đó là một lỗi Dio lạ
-        return Left(UnknownFailure('Lỗi Dio không xác định: ${e.message}'));
       }
+
+      // Fallback nếu sót
+      return Left(
+        ServerFailure(
+          e.message ?? 'Lỗi kết nối máy chủ',
+          statusCode: e.response?.statusCode,
+        ),
+      );
     } catch (e) {
-      // 3. Bắt các lỗi Dart thông thường (lỗi parse, lỗi logic...)
-      return Left(UnknownFailure('Lỗi hệ thống: ${e.toString()}'));
+      // Bắt các lỗi code ngu (Null check operator used on a null value...)
+      return Left(UnknownFailure('Lỗi ứng dụng: $e'));
     }
   }
 
@@ -79,48 +84,46 @@ class AuthRepositoryImpl implements AuthRepository {
     final bool rememberMe = _settingsService.getRememberMe();
 
     if (!rememberMe) {
-      return const Left(ServerFailure("Chế độ 'Ghi nhớ' đang tắt."));
+      // Nếu không nhớ -> coi như phiên hết hạn
+      return const Left(AuthFailure('Chế độ ghi nhớ đang tắt'));
     }
 
     try {
-      // 1. Gọi /me để xác thực token.
+      // 1. Gọi API verify token
       await _apiService.getMe();
 
-      // 2. Token hợp lệ, lấy data local
+      // 2. Lấy data local
       final userData = await _storageService.getUserData();
 
       if (userData != null) {
         return Right(userData);
-      } else {
-        await _storageService.clearAllTokens();
-        return const Left(
-          ServerFailure(
-            'Phiên đăng nhập bị lỗi (mất dữ liệu local). Vui lòng đăng nhập lại.',
-          ),
-        );
       }
 
-      // ✅ SỬA ĐỔI CHUẨN (ÁP DỤNG CHO MỌI HÀM)
-    } on DioException catch (e) {
-      // 1. Kiểm tra xem ErrorInterceptor có gửi "Failure" không
-      if (e.error is Failure) {
-        // Nếu là ServerFailure (ví dụ: 401) thì Interceptor đã xử lý
-        // Nếu là ConnectionFailure (mất mạng) thì Interceptor cũng đã xử lý
-
-        // Logic đặc biệt: Nếu lỗi, ta nên xóa token cho an toàn
-        // (đặc biệt là lỗi 401 mà TokenInterceptor không xử lý được)
-        await _storageService.clearAllTokens();
-
-        return Left(e.error as Failure);
-      } else {
-        // 2. Nếu không phải Failure, đó là một lỗi Dio lạ
-        await _storageService.clearAllTokens();
-        return Left(UnknownFailure('Lỗi Dio không xác định: ${e.message}'));
-      }
-    } catch (e) {
-      // 3. Bắt các lỗi Dart thông thường
+      // Case hiếm: Có token nhưng mất data user dưới local -> Logout
       await _storageService.clearAllTokens();
-      return Left(UnknownFailure('Lỗi hệ thống: ${e.toString()}'));
+      return const Left(AuthFailure('Dữ liệu người dùng không hợp lệ'));
+    } on DioException catch (e) {
+      // [Như]: Xử lý thông minh dựa trên loại Failure
+      if (e.error is Failure) {
+        final failure = e.error as Failure;
+
+        // ⚠️ LOGIC QUAN TRỌNG:
+        // Chỉ xóa token (Logout) nếu lỗi là AuthFailure (401, Token hỏng)
+        // Nếu là ConnectionFailure (Mất mạng) -> KHÔNG ĐƯỢC XÓA TOKEN!
+        if (failure is AuthFailure) {
+          await _storageService.clearAllTokens();
+        }
+
+        return Left(failure);
+      }
+
+      // Các lỗi Dio lạ khác (không phải do Interceptor bắt) -> Logout cho an toàn
+      await _storageService.clearAllTokens();
+      return Left(UnknownFailure('Lỗi kiểm tra trạng thái: ${e.message}'));
+    } catch (e) {
+      // Lỗi code Dart (Crash) -> Logout
+      await _storageService.clearAllTokens();
+      return Left(UnknownFailure('Lỗi hệ thống: $e'));
     }
   }
 }

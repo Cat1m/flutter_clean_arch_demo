@@ -1,44 +1,39 @@
 // lib/core/network/error_interceptor.dart
 
 import 'package:dio/dio.dart';
-import 'package:reqres_in/src/core/network/failures.dart'; // Import lớp Failure của bạn
+import 'package:reqres_in/src/core/network/failures.dart';
 
 class ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    // 1. Phân tích loại lỗi
+    // [Như]: Đổi message sang Technical English (để Log).
+    // Việc hiển thị tiếng Việt sẽ do Extension lo.
     final Failure failure = switch (err.type) {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.sendTimeout ||
       DioExceptionType.receiveTimeout => const ConnectionFailure(
-        'Hết thời gian chờ kết nối',
+        'Connection Timeout',
       ),
 
       DioExceptionType.connectionError => const ConnectionFailure(
-        'Không thể kết nối đến máy chủ',
+        'No Internet Connection',
       ),
 
+      // Bad Response giữ nguyên logic handle
       DioExceptionType.badResponse => _handleBadResponse(err.response),
 
-      DioExceptionType.cancel => const UnknownFailure('Yêu cầu đã bị hủy'),
-
-      DioExceptionType.unknown =>
-        // Trước đây bạn dùng message mặc định,
-        // giờ bạn phải CUNG CẤP message một cách tường minh
-        const ConnectionFailure(
-          'Không có kết nối Internet. Vui lòng kiểm tra lại.',
-        ),
+      DioExceptionType.cancel => const UnknownFailure('Request Cancelled'),
 
       DioExceptionType.badCertificate => const UnknownFailure(
-        'Lỗi chứng chỉ không hợp lệ',
-      ), // Xử lý case còn thiếu
+        'Bad Certificate',
+      ),
+
+      DioExceptionType.unknown => const UnknownFailure('Unknown Error'),
     };
 
-    // 2. "Reject" request với một DioException mới
-    // Bọc "Failure" của chúng ta vào bên trong trường 'error'
     final newErr = DioException(
       requestOptions: err.requestOptions,
-      error: failure, // Đây là mấu chốt!
+      error: failure,
       type: err.type,
       response: err.response,
     );
@@ -46,25 +41,26 @@ class ErrorInterceptor extends Interceptor {
     return handler.reject(newErr);
   }
 
-  /// Xử lý các lỗi Bad Response (4xx, 5xx)
-  /// Chúng ta sẽ cố gắng lấy message lỗi mà server trả về
   Failure _handleBadResponse(Response? response) {
-    String errorMessage = 'Lỗi không xác định từ máy chủ';
-    final int? statusCode = response?.statusCode;
+    final int statusCode = response?.statusCode ?? 0;
+    final dynamic data = response?.data;
 
-    if (response?.data != null && response!.data is Map) {
-      // Đây là phần bạn làm trong Repository:
-      // Cố gắng parse theo format { "error": "..." }
-      errorMessage =
-          response.data['error'] ??
-          // Hoặc thử format { "message": "..." }
-          response.data['message'] ??
-          'Lỗi máy chủ ($statusCode)';
-    } else if (response?.statusMessage != null &&
-        response!.statusMessage!.isNotEmpty) {
-      errorMessage = response.statusMessage!;
+    if (statusCode == 401) {
+      // Message logging thôi, không phải để hiện lên UI
+      return const AuthFailure('Unauthorized (401)');
     }
 
-    return ServerFailure('$errorMessage (Code: $statusCode)');
+    // Server trả về message gì thì mình giữ nguyên cái đó
+    // Vì đôi khi Backend trả về lỗi validation cụ thể
+    String message = 'Server Error ($statusCode)';
+    String? errorCode;
+
+    if (data is Map<String, dynamic>) {
+      message =
+          data['message'] ?? data['error'] ?? data['description'] ?? message;
+      errorCode = data['code']?.toString();
+    }
+
+    return ServerFailure(message, statusCode: statusCode, errorCode: errorCode);
   }
 }

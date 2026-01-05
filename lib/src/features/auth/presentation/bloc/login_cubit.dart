@@ -36,7 +36,7 @@ class LoginCubit extends Cubit<AuthState> {
     // 2. Repository đã tự lưu token nếu thành công
     // Cubit chỉ cần emit state
     result.fold(
-      (failure) => emit(AuthFailure(failure.message)),
+      (failure) => emit(AuthFailure(failure)),
       (response) => emit(AuthSuccess(response)),
     );
   }

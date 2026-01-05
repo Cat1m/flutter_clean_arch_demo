@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 
 sealed class AuthState extends Equatable {
@@ -19,10 +20,10 @@ class AuthSuccess extends AuthState {
 }
 
 class AuthFailure extends AuthState {
-  final String message;
-  const AuthFailure(this.message);
+  final Failure failure;
+  const AuthFailure(this.failure);
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [failure];
 }
 
 class AuthSessionExpired extends AuthState {

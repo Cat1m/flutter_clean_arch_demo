@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // ⭐️ Dọn dẹp: Import AppThemeExtension
 import 'package:reqres_in/src/core/theme/extensions/app_theme_extensions.dart';
+import 'package:reqres_in/src/shared/extensions/failure_extension.dart';
 import '../bloc/auth_state.dart';
 import '../bloc/login_cubit.dart';
 
@@ -36,7 +37,7 @@ class _LoginViewState extends State<LoginView> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  state.message,
+                  state.failure.uiMessage,
                   // ⭐️ Dọn dẹp: Dùng màu chữ onErrr
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onError,

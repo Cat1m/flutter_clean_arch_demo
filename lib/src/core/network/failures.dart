@@ -1,34 +1,43 @@
+// lib/core/network/failures.dart
+
 import 'package:equatable/equatable.dart';
 
-/// Lớp cơ sở cho tất cả các lỗi trong ứng dụng.
-/// Kế thừa Equatable để dễ dàng so sánh các instance lỗi.
-abstract class Failure extends Equatable {
+/// Dart sẽ biết chính xác có bao nhiêu loại lỗi trong hệ thống.
+sealed class Failure extends Equatable {
   final String message;
+  final int? statusCode; // HTTP Status Code (400, 401, 500...)
+  final String?
+  errorCode; // Mã lỗi nghiệp vụ (ví dụ: "USER_LOCKED", "OTP_INVALID")
 
-  const Failure(this.message);
+  const Failure(this.message, {this.statusCode, this.errorCode});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, statusCode, errorCode];
 }
 
-/// Lỗi xảy ra từ phía Server (ví dụ: 500 Internal Server Error, 404 Not Found,
-/// hoặc lỗi logic nghiệp vụ trả về từ API).
+// 1. Lỗi Server (API trả về lỗi hoặc 500)
 class ServerFailure extends Failure {
-  const ServerFailure(super.message);
+  const ServerFailure(super.message, {super.statusCode, super.errorCode});
 }
 
-/// Lỗi xảy ra khi không có kết nối mạng hoặc timeout.
+// 2. Lỗi mạng (Timeout, No Internet)
 class ConnectionFailure extends Failure {
-  const ConnectionFailure([super.message = 'Không có kết nối Internet']);
+  const ConnectionFailure(super.message);
 }
 
-/// Lỗi xảy ra khi làm việc với Local Data Source (ví dụ: không đọc được cache,
-/// lỗi SharedPreferences, lỗi Database cục bộ).
+// 3. Lỗi Cache (Local DB)
 class CacheFailure extends Failure {
-  const CacheFailure([super.message = 'Lỗi bộ nhớ đệm']);
+  const CacheFailure(super.message);
 }
 
-/// Lỗi không xác định hoặc các lỗi ngoại lệ khác không rơi vào các trường hợp trên.
+// 4. Lỗi Authentication (Token hết hạn, sai pass...)
+// -> Tách riêng ra để dễ handle logout ở UI
+class AuthFailure extends Failure {
+  const AuthFailure(super.message);
+}
+
+// 5. Lỗi không xác định
 class UnknownFailure extends Failure {
-  const UnknownFailure([super.message = 'Đã xảy ra lỗi không xác định']);
+  final Object? errorObject; // Lưu lại object lỗi gốc để debug nếu cần
+  const UnknownFailure(super.message, {this.errorObject});
 }
