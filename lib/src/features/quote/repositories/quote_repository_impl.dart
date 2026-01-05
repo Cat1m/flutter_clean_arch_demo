@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/network/api_service.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/quote/models/quote_model.dart';
 import 'package:reqres_in/src/features/quote/repositories/quote_repository.dart';
+import 'package:reqres_in/src/shared/data/remote/api_service.dart';
 
 @LazySingleton(as: QuoteRepository)
 class QuoteRepositoryImpl implements QuoteRepository {

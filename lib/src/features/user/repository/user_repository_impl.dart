@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/network/api_service.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:reqres_in/src/features/user/repository/user_repository.dart';
+import 'package:reqres_in/src/shared/data/remote/api_service.dart';
 
 // <-- Đăng ký: "Tôi là bản triển khai của UserRepository"
 @LazySingleton(as: UserRepository)

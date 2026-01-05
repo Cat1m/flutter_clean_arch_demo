@@ -30,7 +30,7 @@ import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../auth/service/auth_event_service.dart' as _i671;
 import '../navigation/router_module.dart' as _i358;
-import '../network/api_service.dart' as _i921;
+import '../../shared/data/remote/api_service.dart' as _i921;
 import '../network/dio_client.dart' as _i667;
 import '../network/file_upload_service.dart' as _i307;
 import '../network/logger_interceptor.dart' as _i51;

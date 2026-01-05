@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/network/api_service.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 import 'package:reqres_in/src/core/storage/settings_service.dart';
+import 'package:reqres_in/src/shared/data/remote/api_service.dart';
 
 import '../models/auth_models.dart';
 import 'auth_repository.dart';
