@@ -1,23 +1,33 @@
+// lib/core/network/response_envelope.dart
+
 // -----------------------------------------------------------------------------
-// 🟢 CONFIG KEY: Chỉ cần sửa ở đây khi sang Project mới
+// 🟢 CONFIG KEY: Trung tâm điều khiển Key của API
 // -----------------------------------------------------------------------------
 class _Keys {
+  // 1. Core Keys
   static const String data = 'data';
   static const String message = 'message';
-  static const String status = 'status'; // Hoặc 'code', 'errorCode'
+  static const String status = 'status'; // Hoặc 'code'
+
+  // 2. Pagination Keys (Cấu hình 1 lần tại đây)
+  static const String total = 'total'; // Backend trả về tổng số item
+  static const String page = 'page'; // Page hiện tại
+  static const String limit =
+      'per_page'; // Số item trên 1 page (Ví dụ Reqres dùng per_page)
+  static const String totalPages = 'total_pages'; // Tổng số trang
 }
 
-/// ✉️ ENVELOPE (Phong bì)
-/// Dùng cho cấu trúc response dạng object: { "status": 200, "data": {...} }
+/// ✉️ ENVELOPE (Phong bì đơn)
+/// Cấu trúc: { "data": {...}, "message": "..." }
 class Envelope<T> {
   final int? status;
   final String? message;
   final T? data;
 
-  Envelope({this.status, this.message, this.data});
+  const Envelope({this.status, this.message, this.data});
 
-  /// Kiểm tra nhanh status (Tùy logic Backend)
-  bool get isSuccess => status == 200 || status == 201 || status == 1;
+  // [Như]: Getter check success nhanh
+  bool get isSuccess => (status ?? 200) >= 200 && (status ?? 200) < 300;
 
   factory Envelope.fromJson(
     Map<String, dynamic> json,
@@ -26,52 +36,58 @@ class Envelope<T> {
     return Envelope<T>(
       status: json[_Keys.status] as int?,
       message: json[_Keys.message] as String?,
-      // Logic an toàn: Nếu 'data' null thì trả về null
-      data: (json[_Keys.data] != null) ? fromJsonT(json[_Keys.data]) : null,
+      // [Như]: Dart 3 Null-aware: Gọn gàng, an toàn
+      data: switch (json[_Keys.data]) {
+        null => null,
+        final Object data => fromJsonT(data),
+      },
     );
   }
 }
 
-/// ✉️ LIST ENVELOPE (Phong bì chứa Danh sách)
-/// Dùng cho cấu trúc response dạng list: { "data": [...], "total": 100 }
+/// ✉️ LIST ENVELOPE (Phong bì danh sách)
+/// Cấu trúc: { "data": [...], "page": 1, ... }
 class ListEnvelope<T> {
   final int? status;
   final String? message;
   final List<T> data;
 
-  // Các trường phân trang (Pagination)
+  // Metadata phân trang
   final int total;
   final int page;
   final int limit;
+  final int totalPages;
 
-  ListEnvelope({
+  const ListEnvelope({
     this.status,
     this.message,
     this.data = const [],
     this.total = 0,
     this.page = 1,
     this.limit = 10,
+    this.totalPages = 1,
   });
 
   factory ListEnvelope.fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
   ) {
-    final rawData = json[_Keys.data];
-
-    List<T> items = [];
-    if (rawData is List) {
-      items = rawData.map((e) => fromJsonT(e)).toList();
-    }
+    // [Như]: Parse List an toàn tuyệt đối với 1 dòng
+    // Cast sang List? trước, sau đó map. Nếu null hoặc sai kiểu thì trả về empty [].
+    final rawList = json[_Keys.data] as List?;
+    final items = rawList?.map((e) => fromJsonT(e)).toList() ?? <T>[];
 
     return ListEnvelope<T>(
       status: json[_Keys.status] as int?,
       message: json[_Keys.message] as String?,
       data: items,
-      // Mapping các trường phân trang linh hoạt
-      total: (json['total'] ?? json['totalCount'] ?? 0) as int,
-      page: (json['page'] ?? 1) as int,
-      limit: (json['limit'] ?? json['pageSize'] ?? 10) as int,
+
+      // [Như]: Mapping theo Config Key đã định nghĩa ở trên
+      // Dùng ?? 0 để đảm bảo không bao giờ null crash
+      total: (json[_Keys.total] as int?) ?? 0,
+      page: (json[_Keys.page] as int?) ?? 1,
+      limit: (json[_Keys.limit] as int?) ?? 10,
+      totalPages: (json[_Keys.totalPages] as int?) ?? 1,
     );
   }
 }
