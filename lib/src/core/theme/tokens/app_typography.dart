@@ -130,6 +130,7 @@ class AppTypography {
   // --- Cấu hình cho Dark Theme (Thêm mới) ---
   static const Color _darkPrimaryTextColor = AppColors.darkTextPrimary;
   static const Color _darkSecondaryTextColor = AppColors.grey500;
+  // ignore: unused_field
   static final TextStyle _darkBase = GoogleFonts.roboto(
     color: _darkPrimaryTextColor,
     fontWeight: FontWeight.w400,

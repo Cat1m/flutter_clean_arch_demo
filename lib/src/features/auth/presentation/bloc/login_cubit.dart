@@ -2,7 +2,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/service/auth_event_service.dart';
+import 'package:reqres_in/src/core/auth/service/auth_event_service.dart';
 import '../../repository/auth_repository.dart';
 import 'auth_state.dart';
 // KHÔNG CẦN import storage service ở đây nữa

@@ -11,5 +11,4 @@ final getIt = GetIt.instance;
   preferRelativeImports: true,
   asExtension: true,
 )
-// ⭐️ THAY ĐỔI Ở ĐÂY: Thêm 'Future<void>' và 'async'
 Future<void> configureDependencies() async => await getIt.init();

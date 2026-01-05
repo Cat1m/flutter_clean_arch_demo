@@ -1,145 +1,81 @@
-Chắc chắn rồi ạ\! Đây là một ghi chú rất quan trọng cần thêm vào `README` để đảm bảo tính linh hoạt của network layer.
+# 🌐 Core Network Module
 
-Tôi sẽ thêm một **Mục 2** mới vào `NETWORK_README.md` để giải thích về việc này và đẩy các mục khác xuống.
+Module quản lý kết nối mạng, xử lý API và lỗi tập trung cho ứng dụng Flutter.
+Được thiết kế theo kiến trúc **Clean Architecture** và tách biệt hoàn toàn Logic Auth.
 
------
+## 📂 Cấu trúc thư mục
 
-### updated/NETWORK\_README.md
+```text
+lib/src/core/network/
+├── models/
+│   ├── auth_type.dart          # Enum định nghĩa loại xác thực (UserToken, ApiKey, None)
+│   └── response_envelope.dart  # Wrapper phản hồi chuẩn (Envelope Pattern)
+├── clients/
+│   └── dio_client.dart         # Cấu hình Dio (Timeout, Interceptors, Logger)
+├── interceptors/
+│   └── error_interceptor.dart  # Chuyển đổi DioException -> App Failure
+├── services/
+│   └── file_upload_service.dart # Service upload file (có chia Chunk)
+├── api_service.dart            # Định nghĩa toàn bộ Endpoint (Retrofit)
+└── failures.dart               # Các class lỗi Domain (ServerFailure, CacheFailure...)
+🛠️ Thành phần Core (Ít thay đổi)
+Đây là các file xương sống, có thể tái sử dụng 100% qua các dự án khác mà không cần sửa logic.
 
-Đây là nội dung file `README` được cập nhật, với **Mục 2** mới được thêm vào.
+dio_client.dart:
 
-````markdown
-# 📖 Ghi chú về Network Layer (Lớp Mạng)
+Đóng vai trò Factory tạo ra instance Dio.
 
-Thư mục này chứa toàn bộ logic cốt lõi để giao tiếp với API bên ngoài.
+Là nơi "cắm" (plug) các Interceptor từ bên ngoài vào (như Auth, Token).
 
-## 1. Các thành phần chính
+Note: Logger hiện tại đang được cấu hình cứng ở đây (PrettyDioLogger).
 
-* **`dio_client.dart`**: Khởi tạo và cấu hình instance `Dio` duy nhất. Đây là nơi set `baseUrl`, `timeout`, và thêm các `Interceptors`.
-* **`api_service.dart`**: Interface của **Retrofit**. Nơi định nghĩa TẤT CẢ các endpoints.
-* **`base_response.dart`**: Khuôn mẫu (template) cho các API trả về "vỏ thư" (envelope).
-* **`error_interceptor.dart`**: (Tùy chọn) Interceptor để tự động bắt `DioException` và chuyển đổi chúng thành các `Failure` (như `ConnectionFailure`, `ServerFailure`).
-* **`token_interceptor.dart`**: (Tùy chọn) Interceptor để tự động làm mới (refresh) `AccessToken` khi hết hạn.
+error_interceptor.dart:
 
----
+Bắt mọi lỗi từ Dio.
 
-## 2. ⚙️ Xử lý Content-Type (JSON, Upload File...)
+Phân loại lỗi (Timeout, No Internet, Bad Response).
 
-Trong `dio_client.dart`, chúng ta thường set `contentType: 'application/json'` làm **giá trị mặc định** cho toàn bộ ứng dụng.
+Bọc lỗi vào Failure object để tầng UI dễ xử lý.
 
-Tuy nhiên, sẽ có lúc bạn cần ghi đè (override) giá trị này cho các API đặc biệt. `Retrofit` cho phép bạn làm điều này rất dễ dàng ngay tại file `api_service.dart`.
+failures.dart:
 
-### Trường hợp 1: Upload File (Phổ biến nhất)
+Định nghĩa các lỗi nghiệp vụ chung. Dùng Equatable để dễ so sánh.
 
-Khi upload file, bạn phải dùng `Content-Type: multipart/form-data`. `Retrofit` sẽ tự động làm việc này khi bạn dùng `@MultiPart` và `@Part`.
+auth_type.dart:
 
-```dart
-// trong api_service.dart
-@POST('/users/upload-avatar')
-@userAuth // (Giả sử API này cần token user)
-@MultiPart // <-- Tự động đổi Content-Type thành 'multipart/form-data'
-Future<void> uploadAvatar(
-  @Part(name: 'avatar') File avatarFile, // <-- File
-  @Part(name: 'user_id') String userId, // <-- Dữ liệu đi kèm
-);
-````
+Định nghĩa các Annotation (@userToken, @noAuth) dùng trong Retrofit.
 
-### Trường hợp 2: Gửi Form (Ít phổ biến hơn)
+⚙️ Thành phần Tùy biến (Theo dự án)
+Các file này phụ thuộc vào Backend cụ thể của từng dự án. Cần review khi copy sang project mới.
 
-Nếu backend yêu cầu `Content-Type: application/x-www-form-urlencoded` (giống form web cũ), bạn có thể dùng `@Headers`.
+response_envelope.dart (Quan trọng):
 
-```dart
-// trong api_service.dart
-@POST('/submit-legacy-form')
-@userAuth
-@Headers({ // <-- Ghi đè header tại đây
-  'Content-Type': 'application/x-www-form-urlencoded',
-})
-Future<void> submitLegacyForm(
-  @Body() Map<String, String> formBody,
-);
-```
+Định nghĩa cấu trúc JSON trả về.
 
-**Kết luận:** `BaseOptions` trong `DioClient` là "luật chung" (default), còn các annotation `@` trong `ApiService` là "luật riêng" (override), có độ ưu tiên cao hơn.
+Ví dụ: Backend trả { "data": ..., "err_code": 0 } thì phải sửa file này để map đúng key.
 
------
+api_service.dart:
 
-## 3\. ⚠️ QUAN TRỌNG: Khái niệm "Vỏ Thư" (`BaseResponse`)
+Chứa danh sách các API endpoints.
 
-Hầu hết các dự án backend chuyên nghiệp KHÔNG trả về dữ liệu thô. Thay vào đó, họ trả về một cấu trúc "vỏ thư" (Response Envelope) chung.
+Hiện tại đang quản lý Tập trung (Centralized).
 
-File `base_response.dart` là một **KHUÔN MẪU** cho cấu trúc đó.
+Scaling: Nếu file này quá lớn (>300 dòng), hãy tách thành AuthClient, UserClient và đặt vào folder Feature tương ứng.
 
-### Vấn đề: Mỗi dự án mỗi khác\!
+file_upload_service.dart:
 
-Cấu trúc "vỏ thư" **HOÀN TOÀN TÙY THUỘC VÀO DỰ ÁN**.
+Logic upload file. Cần kiểm tra lại URL upload và logic Chunking nếu Server thay đổi.
 
-  * **Dự án A (giống template):**
-    ```json
-    {
-      "status": 1,
-      "message": "Đăng nhập thành công",
-      "data": { "token": "..." }
-    }
-    ```
-  * **Dự án B (khác):**
-    ```json
-    {
-      "success": true,
-      "error_code": null,
-      "result": { "token": "..." }
-    }
-    ```
+🚀 Cách sử dụng (Setup)
+Cài đặt dependencies: Chạy script setup (nếu có) hoặc đảm bảo pubspec.yaml có: dio, retrofit, json_annotation...
 
-### Checklist cho Dự án MỚI:
+Dependency Injection: Module này cần được cung cấp Interceptor từ module Auth. Xem file core/di/register_module.dart để biết cách inject.
 
-1.  **Hỏi Backend:** Cấu trúc "vỏ thư" chung là gì?
-2.  **Sửa `base_response.dart`:** Đổi tên trường, kiểu dữ liệu, và logic `isSuccess` cho khớp.
-3.  **Sửa `api_service.dart`:** Đảm bảo các hàm trả về `Future<BaseResponse<YourModel>>`.
-4.  **Sửa `Repository`:** Xử lý lỗi 2 tầng: `try...on DioException` (hoặc dùng `ErrorInterceptor`) VÀ `if (baseResponse.isSuccess)`.
+Gọi API:
 
------
+Dart
 
-## 4\. (Nâng cao) TùY CHỌN: Xử lý Refresh Token tự động
-
-Đây là một "Security Pattern" (mẫu bảo mật).
-
-### Vấn đề:
-
-  * Khi đăng nhập, backend chuyên nghiệp sẽ trả về 2 token:
-    1.  `AccessToken` (Vé xem phim): Hạn ngắn (ví dụ: 15 phút).
-    2.  `RefreshToken` (Thẻ thành viên): Hạn dài (ví dụ: 30 ngày).
-  * Khi `AccessToken` hết hạn, API sẽ trả về **lỗi 401 Unauthorized**.
-
-### Giải pháp: "Người Trợ Lý Thông Minh" (`TokenInterceptor`)
-
-Chúng ta tạo một `QueuedInterceptor` để:
-
-1.  Bắt lỗi 401.
-2.  **"Khóa" (Lock)** Dio lại (tạm dừng các request khác).
-3.  Tự mình gọi API `/refresh-token` (dùng `RefreshToken`).
-4.  **Nếu thành công:** Lấy `AccessToken` mới, lưu lại, và "Mở khóa" (Unlock) Dio.
-5.  **"Thử lại" (Retry)** request vừa thất bại.
-6.  **Nếu thất bại** (ví dụ: `RefreshToken` cũng hết hạn): Đăng xuất người dùng.
-
-### Checklist để áp dụng:
-
-1.  **Hỏi Backend:** API có cơ chế Refresh Token không?
-2.  **Nếu có:**
-      * Lấy file `token_interceptor.dart` (code mẫu).
-      * Thêm `TokenInterceptor` vào `dio_client.dart` (sau `AuthInterceptor`, trước `ErrorInterceptor`).
-
------
-
-## 5\. 💡 Lưu ý cho dự án này (`reqres.in`)
-
-API `reqres.in` được dùng trong dự án học tập này **KHÔNG SỬ DỤNG** cả `BaseResponse` lẫn `Refresh Token`.
-
-  * Nó trả về dữ liệu thô (raw data).
-  * Nó chỉ trả về 1 `token` duy nhất.
-  * Vì vậy, các file `base_response.dart`, `error_interceptor.dart`, `token_interceptor.dart` và ghi chú này chỉ mang tính chất tham khảo cho các dự án thực tế trong tương lai.
-
-<!-- end list -->
-
-```
-```
+// Repository Layer
+final response = await _apiService.login(request);
+📝 Notes
+Logger: Hiện tại PrettyDioLogger đang nằm trong DioClient. Nếu muốn customize log sâu hơn, nên tách ra thành LoggerInterceptor riêng.

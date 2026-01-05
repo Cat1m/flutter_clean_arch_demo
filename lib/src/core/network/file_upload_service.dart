@@ -12,10 +12,9 @@ import 'package:reqres_in/src/core/env/env.dart';
 
 @lazySingleton // Đăng ký với GetIt/Injectable
 class FileUploadService {
-  final Dio _dio; // Dùng instance Dio đã cấu hình
+  final Dio _dio;
 
-  // Constructor nhận DioClient
-  FileUploadService(Dio dioClient) : _dio = dioClient;
+  FileUploadService(this._dio);
 
   // --- Các hằng số cho server file ---
   static final String _fileServerBaseUrl = Env.fileServer;

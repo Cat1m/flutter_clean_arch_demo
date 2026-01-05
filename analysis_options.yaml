@@ -25,7 +25,7 @@ linter:
     directives_ordering: true
     
     # --- SAFETY & BUGS ---
-    #avoid_print: true          # Nên tắt khi dev, bật khi chuẩn bị release
+    avoid_print: true          # Nên tắt khi dev, bật khi chuẩn bị release
     unawaited_futures: true
     avoid_void_async: true
     cancel_subscriptions: true

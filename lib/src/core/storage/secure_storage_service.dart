@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 
 // Định nghĩa các key chúng ta sẽ dùng
@@ -12,6 +13,7 @@ class _StorageKeys {
   // Bạn cũng có thể lưu API Key ở đây nếu nó bí mật
 }
 
+@lazySingleton
 class SecureStorageService {
   // Tạo một instance singleton cho FlutterSecureStorage
   final _storage = const FlutterSecureStorage(

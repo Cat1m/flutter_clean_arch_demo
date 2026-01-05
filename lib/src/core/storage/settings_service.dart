@@ -1,5 +1,6 @@
 // Import thêm 'package:flutter/material.dart' để dùng ThemeMode
 import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _SettingKeys {
@@ -8,6 +9,7 @@ class _SettingKeys {
   static const String themeMode = 'theme_mode';
 }
 
+@lazySingleton
 class SettingsService {
   final SharedPreferences _prefs;
 

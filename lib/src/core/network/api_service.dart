@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
-import 'package:reqres_in/src/core/network/auth_type.dart';
-import 'package:reqres_in/src/features/quote/models/quote_model.dart';
-import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:retrofit/retrofit.dart';
-// Import Models từ các features cần thiết (hoặc để models chung ở core nếu muốn)
+
+// 2. Import Models từ Feature (Chấp nhận Inverse Dependency ở quy mô nhỏ)
 import '../../features/auth/models/auth_models.dart';
+import '../../features/quote/models/quote_model.dart';
+import '../../features/user/models/user_model.dart';
+// 1. Import các Config (Auth & Log) từ Core
+import 'models/auth_type.dart';
+import 'models/log_mode.dart';
 
 part 'api_service.g.dart';
 
@@ -12,22 +15,38 @@ part 'api_service.g.dart';
 abstract class ApiService {
   factory ApiService(Dio dio) = _ApiService;
 
-  // --- Auth Endpoints ---
-  @noAuth
+  // ---------------------------------------------------------------------------
+  // region Authentication
+  // ---------------------------------------------------------------------------
+
   @POST('/auth/login')
+  @noAuth
   Future<LoginResponse> login(@Body() LoginRequest body);
 
-  @noAuth
   @POST('/auth/refresh')
+  @noAuth
   Future<RefreshResponse> refresh(@Body() RefreshRequest body);
 
-  // --- User Endpoints (Để test) ---
-  @userToken
+  // endregion
+
+  // ---------------------------------------------------------------------------
+  // region User
+  // ---------------------------------------------------------------------------
+
   @GET('/auth/me')
+  @userToken
   Future<User> getMe();
 
-  // --- Quote Endpoints ---
-  @noAuth
+  // endregion
+
+  // ---------------------------------------------------------------------------
+  // region Quotes
+  // ---------------------------------------------------------------------------
+
   @GET('/quotes/random')
+  @noAuth
+  // Không gắn tag Log -> Mặc định là Basic (do LoggerInterceptor config)
   Future<QuoteModel> getRandomQuote();
+
+  // endregion
 }
