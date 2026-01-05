@@ -36,15 +36,37 @@ class _LoginViewState extends State<LoginView> {
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  state.failure.uiMessage,
-                  // ⭐️ Dọn dẹp: Dùng màu chữ onErrr
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onError,
-                  ),
+                // ✅ Hiển thị Icon và Message từ FailureExtension
+                content: Row(
+                  children: [
+                    Text(state.failure.icon), // Hiển thị icon (📡, 🔐, ⚠️)
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        // Sửa lỗi: Gọi hàm toDisplayMessage() thay vì getter
+                        state.failure.toDisplayMessage(),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onError,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                // ⭐️ Dọn dẹp: Dùng màu error từ theme
                 backgroundColor: Theme.of(context).colorScheme.error,
+                behavior:
+                    SnackBarBehavior.floating, // Khuyến nghị: floating đẹp hơn
+                // ✅ Thêm Action Button dựa trên loại lỗi (Thử lại / Đóng)
+                action: SnackBarAction(
+                  label: state.failure.actionText.toUpperCase(),
+                  textColor: Theme.of(context).colorScheme.onError,
+                  onPressed: () {
+                    // Xử lý logic retry nếu cần (dựa trên state.failure.shouldRetry)
+                    if (state.failure.shouldRetry) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      // Gọi lại hàm login hoặc refresh logic tại đây
+                    }
+                  },
+                ),
               ),
             );
           }

@@ -124,35 +124,3 @@ class UnknownFailure extends Failure {
   @override
   List<Object?> get props => [...super.props, errorObject];
 }
-
-// ✅ Extension để dễ dàng chuyển đổi sang user-friendly message
-extension FailureExtension on Failure {
-  /// Lấy message hiển thị cho user (có thể localize)
-  String toDisplayMessage() {
-    return switch (this) {
-      ConnectionFailure() => 'Không có kết nối mạng. Vui lòng thử lại.',
-      AuthFailure() => 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
-      ServerFailure(statusCode: 400) => 'Dữ liệu không hợp lệ.',
-      ServerFailure(statusCode: 404) => 'Không tìm thấy dữ liệu.',
-      ServerFailure(statusCode: 500) => 'Lỗi máy chủ. Vui lòng thử lại sau.',
-      ServerFailure(message: final msg) => msg,
-      CacheFailure() => 'Lỗi đọc dữ liệu cục bộ.',
-      UnknownFailure() => 'Có lỗi xảy ra. Vui lòng thử lại.',
-    };
-  }
-
-  /// Có nên retry request này không?
-  bool get shouldRetry {
-    return switch (this) {
-      ConnectionFailure() => true,
-      ServerFailure(statusCode: final code) when code != null && code >= 500 =>
-        true,
-      _ => false,
-    };
-  }
-
-  /// Có nên logout user không?
-  bool get shouldLogout {
-    return this is AuthFailure;
-  }
-}
