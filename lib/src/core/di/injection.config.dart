@@ -31,7 +31,6 @@ import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../auth/service/auth_event_service.dart' as _i671;
 import '../navigation/router_module.dart' as _i358;
 import '../network/dio_client.dart' as _i667;
-import '../network/logger_interceptor.dart' as _i51;
 import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
@@ -53,7 +52,6 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
-    gh.lazySingleton<_i51.LoggerInterceptor>(() => _i51.LoggerInterceptor());
     gh.lazySingleton<_i724.NetworkService>(() => _i724.NetworkService());
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(),
@@ -77,7 +75,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.dioClient(
         gh<_i164.AuthInterceptor>(),
         gh<_i823.TokenInterceptor>(),
-        gh<_i51.LoggerInterceptor>(),
       ),
     );
     gh.lazySingleton<_i361.Dio>(

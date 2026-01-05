@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/network/models/auth_type.dart';
+import 'package:reqres_in/src/core/auth/auth_type.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 
 @lazySingleton

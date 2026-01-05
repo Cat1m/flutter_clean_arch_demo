@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
 // 1. Import các Config (Auth & Log) từ Core
-import '../../../core/network/models/auth_type.dart';
+import '../../../core/auth/auth_type.dart';
 // 2. Import Models từ Feature (Chấp nhận Inverse Dependency ở quy mô nhỏ)
 import '../../../features/auth/models/auth_models.dart';
 import '../../../features/quote/models/quote_model.dart';

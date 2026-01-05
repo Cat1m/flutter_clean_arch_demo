@@ -4,6 +4,17 @@ import 'package:dio/dio.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 
 class ErrorInterceptor extends Interceptor {
+  // ✅ Config để linh hoạt hơn, không hardcode
+  final List<int> authFailureStatusCodes;
+  final List<String> messageKeys;
+  final List<String> errorCodeKeys;
+
+  ErrorInterceptor({
+    this.authFailureStatusCodes = const [401, 403],
+    this.messageKeys = const ['message', 'error', 'description', 'detail'],
+    this.errorCodeKeys = const ['code', 'error_code', 'errorCode'],
+  });
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // [Như]: Đổi message sang Technical English (để Log).
@@ -28,7 +39,10 @@ class ErrorInterceptor extends Interceptor {
         'Bad Certificate',
       ),
 
-      DioExceptionType.unknown => const UnknownFailure('Unknown Error'),
+      DioExceptionType.unknown => UnknownFailure(
+        'Unknown Error: ${err.message ?? "No details"}',
+        errorObject: err.error,
+      ),
     };
 
     final newErr = DioException(
@@ -36,6 +50,7 @@ class ErrorInterceptor extends Interceptor {
       error: failure,
       type: err.type,
       response: err.response,
+      stackTrace: err.stackTrace,
     );
 
     return handler.reject(newErr);
@@ -45,22 +60,37 @@ class ErrorInterceptor extends Interceptor {
     final int statusCode = response?.statusCode ?? 0;
     final dynamic data = response?.data;
 
-    if (statusCode == 401) {
-      // Message logging thôi, không phải để hiện lên UI
-      return const AuthFailure('Unauthorized (401)');
+    // ✅ Check Auth failure dựa trên config
+    if (authFailureStatusCodes.contains(statusCode)) {
+      return AuthFailure('Unauthorized ($statusCode)', statusCode: statusCode);
     }
 
-    // Server trả về message gì thì mình giữ nguyên cái đó
-    // Vì đôi khi Backend trả về lỗi validation cụ thể
+    // ✅ Extract message và errorCode linh hoạt hơn
     String message = 'Server Error ($statusCode)';
     String? errorCode;
 
     if (data is Map<String, dynamic>) {
-      message =
-          data['message'] ?? data['error'] ?? data['description'] ?? message;
-      errorCode = data['code']?.toString();
+      // Try multiple keys for message
+      message = _extractFirstValue(data, messageKeys) ?? message;
+
+      // Try multiple keys for error code
+      errorCode = _extractFirstValue(data, errorCodeKeys);
+    } else if (data is String) {
+      // Nếu backend trả về string thẳng
+      message = data;
     }
 
     return ServerFailure(message, statusCode: statusCode, errorCode: errorCode);
+  }
+
+  // ✅ Helper để extract value từ nhiều possible keys
+  String? _extractFirstValue(Map<String, dynamic> data, List<String> keys) {
+    for (final key in keys) {
+      final value = data[key];
+      if (value != null) {
+        return value.toString();
+      }
+    }
+    return null;
   }
 }
