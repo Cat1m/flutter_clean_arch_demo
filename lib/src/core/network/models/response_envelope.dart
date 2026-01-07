@@ -9,12 +9,11 @@ class _Keys {
   static const String message = 'message';
   static const String status = 'status'; // Hoặc 'code'
 
-  // 2. Pagination Keys (Cấu hình 1 lần tại đây)
-  static const String total = 'total'; // Backend trả về tổng số item
-  static const String page = 'page'; // Page hiện tại
-  static const String limit =
-      'per_page'; // Số item trên 1 page (Ví dụ Reqres dùng per_page)
-  static const String totalPages = 'total_pages'; // Tổng số trang
+  // 2. Pagination Keys
+  static const String total = 'total';
+  static const String page = 'page';
+  static const String limit = 'per_page';
+  static const String totalPages = 'total_pages';
 }
 
 /// ✉️ ENVELOPE (Phong bì đơn)
@@ -26,7 +25,7 @@ class Envelope<T> {
 
   const Envelope({this.status, this.message, this.data});
 
-  // [Như]: Getter check success nhanh
+  // Getter check success nhanh
   bool get isSuccess => (status ?? 200) >= 200 && (status ?? 200) < 300;
 
   factory Envelope.fromJson(
@@ -36,7 +35,7 @@ class Envelope<T> {
     return Envelope<T>(
       status: json[_Keys.status] as int?,
       message: json[_Keys.message] as String?,
-      // [Như]: Dart 3 Null-aware: Gọn gàng, an toàn
+      // ✅ Dart 3 Pattern Matching: Xử lý null safety cực gọn
       data: switch (json[_Keys.data]) {
         null => null,
         final Object data => fromJsonT(data),
@@ -72,18 +71,20 @@ class ListEnvelope<T> {
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
   ) {
-    // [Như]: Parse List an toàn tuyệt đối với 1 dòng
-    // Cast sang List? trước, sau đó map. Nếu null hoặc sai kiểu thì trả về empty [].
-    final rawList = json[_Keys.data] as List?;
-    final items = rawList?.map((e) => fromJsonT(e)).toList() ?? <T>[];
+    // ✅ REFACTOR SAFETY: Dùng Pattern Matching để cast an toàn tuyệt đối.
+    // Nếu json['data'] là List -> map nó.
+    // Nếu là null hoặc bất cứ kiểu gì khác (Map, String...) -> trả về rỗng [].
+    final items = switch (json[_Keys.data]) {
+      final List<dynamic> list => list.map((e) => fromJsonT(e)).toList(),
+      _ => <T>[],
+    };
 
     return ListEnvelope<T>(
       status: json[_Keys.status] as int?,
       message: json[_Keys.message] as String?,
       data: items,
 
-      // [Như]: Mapping theo Config Key đã định nghĩa ở trên
-      // Dùng ?? 0 để đảm bảo không bao giờ null crash
+      // Metadata keys
       total: (json[_Keys.total] as int?) ?? 0,
       page: (json[_Keys.page] as int?) ?? 1,
       limit: (json[_Keys.limit] as int?) ?? 10,

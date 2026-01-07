@@ -221,6 +221,33 @@ final total = envelope.total;        // 50
 final hasMore = envelope.page < envelope.totalPages; // true
 ```
 
+### 5. Smart Retry Mechanism (`core/network/retry_interceptor.dart`)
+
+Module tích hợp sẵn cơ chế tự động thử lại (retry) thông minh, giúp ứng dụng kiên cường hơn trước các sự cố mạng tạm thời (Transient Network Errors).
+
+**Tính năng kỹ thuật:**
+
+- **Token Preservation Safety**: Cơ chế retry sử dụng `Dio` instance độc lập nhưng **COPY TOÀN BỘ** cấu hình của request gốc (Headers, Auth Token, Timeouts). Đảm bảo không bị mất đăng nhập (401) khi retry.
+- **Exponential Backoff**: Áp dụng chiến thuật lùi mũ (1s → 2s → 3s...) để giảm tải cho server thay vì spam request liên tục.
+- **Selective Retry**: Chỉ retry với các lỗi hệ thống xác định là "có thể hồi phục" (Retryable):
+- **Network**: Connection Timeout, Send/Receive Timeout, SocketException.
+- **Server**: 408 (Request Timeout), 429 (Too Many Requests), 500, 502, 503, 504.
+
+**Cách kích hoạt:**
+
+Tính năng này mặc định tắt (`enableRetry: false`). Để bật, chỉ cần config trong `DioClient`:
+
+```dart
+final client = DioClient(
+  baseUrl: '[https://api.example.com](https://api.example.com)',
+  // ✅ Kích hoạt Retry
+  enableRetry: true,
+  // (Optional) Cấu hình nâng cao
+  maxRetries: 3,                          // Thử lại tối đa 3 lần
+  retryDelay: const Duration(seconds: 1), // Thời gian chờ cơ sở
+);
+
+
 ## 🛠 Pubspec Setup
 
 Copy đoạn này vào `pubspec.yaml` của dự án:

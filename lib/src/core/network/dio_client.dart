@@ -1,23 +1,23 @@
+// lib/core/network/dio_client.dart
+
 import 'package:dio/dio.dart';
-import 'package:reqres_in/src/core/network/error_interceptor.dart';
-import 'package:reqres_in/src/core/network/logger_interceptor.dart';
-import 'package:reqres_in/src/core/network/retry_interceptor.dart';
+
+import 'network.dart';
 
 class DioClient {
-  // ✅ Dùng late final thay vì nullable + getter
-  // -> Đảm bảo chỉ khởi tạo 1 lần duy nhất
+  // ✅ Dùng late final để đảm bảo chỉ khởi tạo 1 lần duy nhất
   late final Dio dio = _createDio();
 
   final String baseUrl;
   final List<Interceptor> interceptors;
 
-  // ✅ Thêm config options để linh hoạt hơn
+  // Config options
   final Duration connectTimeout;
   final Duration receiveTimeout;
   final Duration sendTimeout;
   final String contentType;
 
-  // ✅ Config cho retry
+  // Config cho retry
   final bool enableRetry;
   final int maxRetries;
   final Duration retryDelay;
@@ -34,7 +34,7 @@ class DioClient {
     this.retryDelay = const Duration(seconds: 1),
   });
 
-  // ✅ Private factory method - clean và testable
+  // ✅ Private factory method - Clean & Direct
   Dio _createDio() {
     final dio = Dio(
       BaseOptions(
@@ -46,41 +46,22 @@ class DioClient {
       ),
     );
 
-    // 1. Add custom interceptors trước (để có thể override behavior)
+    // 1. Add custom interceptors từ bên ngoài (nếu có)
     dio.interceptors.addAll(interceptors);
 
-    // 2. Add RetryInterceptor nếu được bật (phải ở trước ErrorInterceptor)
+    // 2. Add RetryInterceptor (nếu enable) - Ưu tiên chạy sớm để handle retry
     if (enableRetry) {
-      _addInterceptorIfNotExists<RetryInterceptor>(
-        dio,
+      dio.interceptors.add(
         RetryInterceptor(maxRetries: maxRetries, retryDelay: retryDelay),
       );
     }
 
-    // 3. Add LoggerInterceptor nếu chưa có
-    _addInterceptorIfNotExists<LoggerInterceptor>(dio, LoggerInterceptor());
+    // 3. Add LoggerInterceptor (Luôn có để debug dễ dàng)
+    dio.interceptors.add(LoggerInterceptor());
 
-    // 4. Add ErrorInterceptor ở cuối (để catch tất cả errors)
-    _addInterceptorIfNotExists<ErrorInterceptor>(dio, ErrorInterceptor());
+    // 4. Add ErrorInterceptor (Luôn nằm cuối cùng để catch & transform errors)
+    dio.interceptors.add(ErrorInterceptor());
 
     return dio;
-  }
-
-  // ✅ Helper method để tránh duplicate interceptors
-  void _addInterceptorIfNotExists<T extends Interceptor>(
-    Dio dio,
-    T interceptor,
-  ) {
-    if (!dio.interceptors.any((e) => e.runtimeType == T)) {
-      dio.interceptors.add(interceptor);
-    }
-  }
-
-  // ✅ Utility method để clear và rebuild Dio (dùng khi cần refresh config)
-  void rebuild() {
-    // Force rebuild bằng cách tạo exception nếu đã init
-    throw UnsupportedError(
-      'DioClient cannot be rebuilt. Create a new instance instead.',
-    );
   }
 }

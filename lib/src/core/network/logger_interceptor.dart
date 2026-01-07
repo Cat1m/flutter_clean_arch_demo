@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
-import 'package:reqres_in/src/core/network/models/log_mode.dart';
+
+import 'network.dart';
 
 class LoggerInterceptor extends Interceptor {
   // ✅ Cho phép config từ constructor thay vì hardcode
