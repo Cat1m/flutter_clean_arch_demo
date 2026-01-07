@@ -26,6 +26,7 @@ import '../../features/user/repository/user_repository.dart' as _i480;
 import '../../features/user/repository/user_repository_impl.dart' as _i57;
 import '../../shared/data/remote/api_service.dart' as _i1053;
 import '../../shared/data/remote/file_upload_service.dart' as _i931;
+import '../../shared/theme/theme_cubit.dart' as _i0;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../auth/service/auth_event_service.dart' as _i671;
@@ -34,7 +35,6 @@ import '../network/dio_client.dart' as _i667;
 import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
-import '../theme/theme_manager/theme_cubit.dart' as _i381;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -59,11 +59,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i112.SettingsService>(
       () => _i112.SettingsService(gh<_i460.SharedPreferences>()),
     );
+    gh.lazySingleton<_i0.ThemeCubit>(
+      () => _i0.ThemeCubit(gh<_i460.SharedPreferences>()),
+    );
     gh.lazySingleton<_i164.AuthInterceptor>(
       () => _i164.AuthInterceptor(gh<_i666.SecureStorageService>()),
-    );
-    gh.lazySingleton<_i381.ThemeCubit>(
-      () => _i381.ThemeCubit(gh<_i112.SettingsService>()),
     );
     gh.lazySingleton<_i823.TokenInterceptor>(
       () => _i823.TokenInterceptor(

@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+// Thay đổi đường dẫn import này tùy theo structure thực tế của bạn
 import 'package:reqres_in/src/core/di/injection.dart' as di;
-// --- Thêm import cho Theme ---
-import 'package:reqres_in/src/core/theme/app_theme.dart';
-import 'package:reqres_in/src/core/theme/theme_manager/theme_cubit.dart';
 import 'package:reqres_in/src/core/widgets/network_snackbar_listener.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
+// Import Feature Settings (Nơi chứa ThemeCubit)
+import 'package:reqres_in/src/shared/theme/theme_cubit.dart';
+
+// ✅ Import Core UI (Barrel file)
+import 'src/core/ui/ui.dart';
 
 // ------------------------------
 
@@ -17,7 +20,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 2. Cấu hình DI
-  // (Sẽ tự động đăng ký 'ThemeCubit' của bạn vì nó có @lazySingleton)
   await di.configureDependencies();
 
   // 3. Kích hoạt logic auth
@@ -32,32 +34,37 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy instance GoRouter (giữ nguyên)
+    // Lấy instance GoRouter
     final router = di.getIt<GoRouter>();
 
     // 5. ⭐️ Bọc toàn bộ ứng dụng bằng ThemeCubit
     return BlocProvider(
-      create: (context) => di.getIt<ThemeCubit>(),
+      create: (context) =>
+          di.getIt<ThemeCubit>(), // Load saved theme từ local storage
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          // 6. Trả về MaterialApp.router với theme đã được cấu hình
+          // 6. Trả về MaterialApp.router với theme chuẩn Core UI
           return MaterialApp.router(
             title: 'Clean Arch Demo',
+            debugShowCheckedModeBanner: false,
 
-            // --- Tích hợp AppTheme ---
-            themeMode: themeMode, // <-- Lấy state từ Cubit
-            theme: AppTheme.lightTheme, // <-- Áp dụng Light Theme
-            // Tạm thời dùng lightTheme cho cả hai để test
-            darkTheme: AppTheme.darkTheme,
-            // --------------------------
+            // --- ✅ Tích hợp AppTheme từ Core UI ---
+            themeMode: themeMode, // State từ Cubit (System/Light/Dark)
+            theme: AppTheme.light(), // Config Light chuẩn
+            darkTheme: AppTheme.dark(), // Config Dark chuẩn
+            // -------------------------------------
 
-            // 7. Cung cấp cấu hình router (giữ nguyên)
+            // 7. Cung cấp cấu hình router
             routerConfig: router,
 
-            // 8. Cung cấp LoginCubit (giữ nguyên)
+            // 8. Global UI Wrappers (LoginCubit, Snackbar...)
             builder: (context, child) {
-              return BlocProvider.value(
-                value: di.getIt<LoginCubit>(),
+              return MultiBlocProvider(
+                providers: [
+                  // Inject LoginCubit global để check auth mọi nơi
+                  BlocProvider.value(value: di.getIt<LoginCubit>()),
+                ],
+                // Listener lắng nghe lỗi mạng toàn cục
                 child: NetworkSnackbarListener(child: child!),
               );
             },

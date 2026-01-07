@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // <-- Thêm import
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:reqres_in/src/core/theme/extensions/app_theme_extensions.dart';
-import 'package:reqres_in/src/core/theme/theme_manager/theme_cubit.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 import 'package:reqres_in/src/features/quote/widgets/random_quote_widget.dart';
+import 'package:reqres_in/src/shared/theme/theme_cubit.dart';
 
 class HomeView extends StatelessWidget {
   final LoginResponse userData;
@@ -13,107 +13,90 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy TextTheme TỪ AppTheme (giờ đã nhất quán)
-    final textTheme = Theme.of(context).textTheme;
+    // Không cần lấy textTheme thủ công nữa
 
     return Scaffold(
       appBar: AppBar(
-        // title: const Text('Trang chủ'), (Đã có trong AppAppBarTheme)
+        // title: const Text('Trang chủ'), // Đã setup trong AppTheme
         automaticallyImplyLeading: false,
         actions: [
-          // ⭐️ Nút chuyển Theme (Thêm mới)
+          // ⭐️ Nút chuyển Theme (Refactor siêu gọn)
           IconButton(
             icon: const Icon(Icons.brightness_6_outlined),
             tooltip: 'Đổi sáng/tối',
             onPressed: () {
-              // 1. Lấy cubit
-              final cubit = context.read<ThemeCubit>();
-              // 2. Lấy state hiện tại
-              final currentMode = cubit.state;
-              // 3. Chuyển đổi (ví dụ đơn giản)
-              final newMode = currentMode == ThemeMode.light
-                  ? ThemeMode.dark
-                  : ThemeMode.light;
-              // 4. Gọi hàm
-              cubit.setThemeMode(newMode);
+              // ✅ Gọi hàm toggleTheme() đã viết sẵn trong Cubit
+              context.read<ThemeCubit>().toggleTheme();
             },
           ),
-          // Nút Profile
+
           IconButton(
             icon: const Icon(Icons.person_outline),
             tooltip: 'Trang cá nhân',
-            onPressed: () {
-              context.push('/profile');
-            },
+            onPressed: () => context.push('/profile'),
           ),
-          // Nút Logout
+
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Đăng xuất',
-            onPressed: () {
-              context.push('/logout-confirm');
-            },
+            onPressed: () => context.push('/logout-confirm'),
           ),
         ],
       ),
       body: Center(
-        child: Padding(
-          // ⭐️ Dọn dẹp: Dùng token spacing từ ThemeExtension
-          padding: EdgeInsets.all(
-            Theme.of(
-              context,
-            ).extension<AppThemeExtension>()!.spacing.xl, // 24.0
-          ),
+        child: SingleChildScrollView(
+          // Thêm scroll cho an toàn trên màn hình nhỏ
+          // ✅ Dùng AppDimens.s24 thay vì gọi extension dài dòng
+          padding: const EdgeInsets.all(AppDimens.s24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleAvatar(
                 radius: 60,
+                // Thêm background color phòng khi ảnh lỗi hoặc đang load
+                backgroundColor: context.colors.surface,
                 backgroundImage: NetworkImage(userData.image),
+                // Xử lý lỗi ảnh đơn giản
+                onBackgroundImageError: (_, _) {},
+                child: userData.image.isEmpty
+                    ? const Icon(Icons.person, size: 40)
+                    : null,
               ),
-              // ⭐️ Dọn dẹp: Dùng token spacing
-              SizedBox(
-                height: Theme.of(
-                  context,
-                ).extension<AppThemeExtension>()!.spacing.xl, // 24.0
-              ),
+
+              // ✅ Dùng AppDimens.s24
+              const SizedBox(height: AppDimens.s24),
+
               Text(
                 'Chào mừng trở lại,',
-                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
-                // headlineSmall (24px, grey900)
-                style: textTheme.headlineSmall,
+                // ✅ Dùng context.text.h2 (tương đương 24px)
+                style: context.text.h2,
               ),
-              // ⭐️ Dọn dẹp: Dùng token spacing
-              SizedBox(
-                height: Theme.of(
-                  context,
-                ).extension<AppThemeExtension>()!.spacing.xs, // 8.0
-              ),
+
+              // ✅ Dùng AppDimens.s8
+              const SizedBox(height: AppDimens.s8),
+
               Text(
                 '${userData.firstName} ${userData.lastName}',
-                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
-                // headlineLarge (32px, primary color)
-                style: textTheme.headlineLarge,
+                // ✅ Dùng context.text.h1 + Màu Primary
+                style: context.text.h1.copyWith(color: context.colors.primary),
                 textAlign: TextAlign.center,
               ),
-              // ⭐️ Dọn dẹp: Dùng token spacing
-              SizedBox(
-                height: Theme.of(
-                  context,
-                ).extension<AppThemeExtension>()!.spacing.xs, // 8.0
-              ),
+
+              // ✅ Dùng AppDimens.s8
+              const SizedBox(height: AppDimens.s8),
+
               Text(
                 '@${userData.username}',
-                // ⭐️ Dọn dẹp: Dùng style từ AppTheme
-                // bodySmall (12px, grey700)
-                style: textTheme.bodySmall?.copyWith(
+                // ✅ Dùng context.text.caption (Small text)
+                style: context.text.caption.copyWith(
                   fontStyle: FontStyle.italic,
+                  fontSize: 14, // Tăng nhẹ size nếu cần
                 ),
               ),
 
-              // 2. Thêm widget quote
-              // ⭐️ Dọn dẹp: Dùng token spacing
-              const SizedBox(height: 48), // (Tạm giữ 48px)
+              // ✅ Dùng AppDimens.s48
+              const SizedBox(height: AppDimens.s48),
+
               const RandomQuoteWidget(),
             ],
           ),
