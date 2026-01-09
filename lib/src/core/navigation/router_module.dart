@@ -14,6 +14,7 @@ import 'package:reqres_in/src/features/auth/presentation/pages/session_expired_p
 // Import tất cả các trang bạn cần cho route
 import 'package:reqres_in/src/features/auth/presentation/pages/splash_page.dart';
 import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
+import 'package:reqres_in/src/features/pdf_test/presentation/pages/pdf_test_page.dart';
 import 'package:reqres_in/src/features/user/presentation/pages/user_page.dart';
 
 // (Bạn cũng cần import LoginResponse nếu dùng state.extra cho HomePage)
@@ -50,6 +51,10 @@ abstract class RouterModule {
             final userData = state.extra as LoginResponse;
             return HomePage(userData: userData);
           },
+        ),
+        GoRoute(
+          path: '/pdf-test',
+          builder: (context, state) => const PdfTestPage(),
         ),
         GoRoute(
           path: '/logout-confirm',

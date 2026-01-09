@@ -20,7 +20,11 @@ class HomeView extends StatelessWidget {
         // title: const Text('Trang chủ'), // Đã setup trong AppTheme
         automaticallyImplyLeading: false,
         actions: [
-          // ⭐️ Nút chuyển Theme (Refactor siêu gọn)
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'Tạo CV PDF',
+            onPressed: () => context.push('/pdf-test'), // Điều hướng
+          ),
           IconButton(
             icon: const Icon(Icons.brightness_6_outlined),
             tooltip: 'Đổi sáng/tối',

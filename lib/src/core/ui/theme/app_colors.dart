@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 // 1. Palette: Bảng màu thô (Chỉ dùng nội bộ file này)
 class _Palette {
   // Brand Colors
-  static const primary = Color(0xFF6200EE);
+  static const primary = Color(0xFF4d2962);
   static const secondary = Color(0xFF03DAC6);
 
   // Status Colors
