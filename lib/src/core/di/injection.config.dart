@@ -32,6 +32,9 @@ import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../auth/service/auth_event_service.dart' as _i671;
 import '../navigation/router_module.dart' as _i358;
 import '../network/dio_client.dart' as _i667;
+import '../pdf/domain/i_pdf_service.dart' as _i979;
+import '../pdf/infrastructure/pdf_font_helper.dart' as _i589;
+import '../pdf/infrastructure/pdf_service_impl.dart' as _i916;
 import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
@@ -46,6 +49,7 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
     final routerModule = _$RouterModule();
+    gh.singleton<_i589.PdfFontHelper>(() => registerModule.pdfFontHelper);
     gh.lazySingleton<_i671.AuthEventService>(() => _i671.AuthEventService());
     await gh.lazySingletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,
@@ -62,6 +66,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i0.ThemeCubit>(
       () => _i0.ThemeCubit(gh<_i460.SharedPreferences>()),
     );
+    gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
     gh.lazySingleton<_i164.AuthInterceptor>(
       () => _i164.AuthInterceptor(gh<_i666.SecureStorageService>()),
     );

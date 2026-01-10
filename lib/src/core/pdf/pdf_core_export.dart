@@ -1,6 +1,7 @@
 export 'domain/i_pdf_service.dart';
 export 'domain/pdf_config_model.dart';
 export 'infrastructure/pdf_generator_helper.dart';
+export 'infrastructure/pdf_image_helper.dart';
 export 'infrastructure/pdf_service_impl.dart';
 export 'presentation/pdf_components.dart';
 export 'presentation/pdf_page_template.dart';

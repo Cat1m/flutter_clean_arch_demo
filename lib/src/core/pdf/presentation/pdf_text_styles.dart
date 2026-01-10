@@ -8,7 +8,6 @@ class PdfTextStyles {
   // Helper để lấy font nhanh
   static pw.Font get _regular => PdfFontHelper.instance.regularFont;
   static pw.Font get _bold => PdfFontHelper.instance.boldFont;
-  // ignore: unused_element
   static pw.Font get _italic => PdfFontHelper.instance.italicFont;
 
   // --- HEADINGS ---
@@ -26,6 +25,8 @@ class PdfTextStyles {
       pw.TextStyle(font: _regular, fontSize: 12, color: PdfColors.black);
 
   static pw.TextStyle get bodyBold => body.copyWith(font: _bold);
+
+  static pw.TextStyle get bodyItalic => body.copyWith(font: _italic);
 
   static pw.TextStyle get bodySmall =>
       body.copyWith(fontSize: 10, color: PdfColors.grey700);

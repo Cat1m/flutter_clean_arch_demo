@@ -1,15 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart'; // Cần gói printing cho Google Fonts
+import 'package:printing/printing.dart';
 
 class PdfFontHelper {
   PdfFontHelper._();
   static final PdfFontHelper instance = PdfFontHelper._();
 
-  // --- CẤU HÌNH ĐƯỜNG DẪN FONT (Độc lập với FlutterGen) ---
-  // Khi sang project mới, chỉ cần đảm bảo có file này trong assets
-  // hoặc sửa đường dẫn tại đây.
+  // --- CẤU HÌNH ĐƯỜNG DẪN FONT ---
   static const _kPathRegular = 'assets/fonts/Roboto-Regular.ttf';
   static const _kPathBold = 'assets/fonts/Roboto-Bold.ttf';
   static const _kPathItalic = 'assets/fonts/Roboto-Italic.ttf';
@@ -18,52 +16,82 @@ class PdfFontHelper {
   pw.Font? _boldFont;
   pw.Font? _italicFont;
 
-  /// Hàm khởi tạo: Asset -> Network -> Fallback
+  // Biến khóa để tránh Race Condition (Lỗi font lần đầu)
+  Future<void>? _pendingInitFuture;
+
+  /// Hàm khởi tạo an toàn (Safe Init)
   Future<void> init() async {
-    if (_regularFont != null) return;
-
-    // 1. Load Regular (Quan trọng nhất)
-    try {
-      _regularFont = await _loadFontAsset(_kPathRegular);
-    } catch (e) {
-      if (kDebugMode) {
-        print('⚠️ PDF: Lỗi load Asset Regular ($_kPathRegular). Thử Online...');
-      }
-      try {
-        _regularFont = await PdfGoogleFonts.robotoRegular();
-      } catch (_) {}
+    // 1. Nếu đủ 3 font rồi thì return luôn
+    if (_regularFont != null && _boldFont != null && _italicFont != null) {
+      return;
     }
 
-    // 2. Load Bold
-    try {
-      _boldFont = await _loadFontAsset(_kPathBold);
-    } catch (e) {
-      if (kDebugMode) print('⚠️ PDF: Lỗi load Asset Bold. Thử Online...');
-      try {
-        _boldFont = await PdfGoogleFonts.robotoBold();
-      } catch (_) {}
+    // 2. Nếu đang chạy dở, bắt các request sau phải chờ chung
+    if (_pendingInitFuture != null) {
+      return _pendingInitFuture;
     }
 
-    // 3. Load Italic (Nếu cần)
+    // 3. Tạo khóa và chạy
+    _pendingInitFuture = _initImpl();
+
+    // 4. Đợi xong
+    await _pendingInitFuture;
+
+    // 5. Xóa khóa
+    _pendingInitFuture = null;
+  }
+
+  // Logic tải thực tế
+  Future<void> _initImpl() async {
     try {
-      _italicFont = await _loadFontAsset(_kPathItalic);
+      // Tải song song cả 3 font cùng lúc cho nhanh
+      await Future.wait([
+        _loadRegular(),
+        _loadBold(),
+        _loadItalic(), // ✅ Đã thêm lại
+      ]);
     } catch (e) {
-      // Không quan trọng lắm, có thể bỏ qua backup
+      if (kDebugMode) print('PDF Font Error: $e');
     }
   }
 
-  Future<pw.Font> _loadFontAsset(String path) async {
-    final data = await rootBundle.load(path);
-    return pw.Font.ttf(data);
+  // --- Các hàm tải chi tiết (Có Backup Online) ---
+
+  Future<void> _loadRegular() async {
+    try {
+      final data = await rootBundle.load(_kPathRegular);
+      _regularFont = pw.Font.ttf(data);
+    } catch (_) {
+      _regularFont = await PdfGoogleFonts.robotoRegular();
+    }
   }
 
-  // --- Getters ---
+  Future<void> _loadBold() async {
+    try {
+      final data = await rootBundle.load(_kPathBold);
+      _boldFont = pw.Font.ttf(data);
+    } catch (_) {
+      _boldFont = await PdfGoogleFonts.robotoBold();
+    }
+  }
+
+  Future<void> _loadItalic() async {
+    try {
+      final data = await rootBundle.load(_kPathItalic);
+      _italicFont = pw.Font.ttf(data);
+    } catch (_) {
+      // Backup Italic Online
+      _italicFont = await PdfGoogleFonts.robotoItalic();
+    }
+  }
+
+  // --- Getters an toàn ---
+
   pw.Font get regularFont => _regularFont ?? pw.Font.courier();
 
-  // Fallback dây chuyền: Bold -> Regular -> CourierBold
   pw.Font get boldFont => _boldFont ?? _regularFont ?? pw.Font.courierBold();
 
-  // Fallback dây chuyền: Italic -> Regular -> CourierOblique
+  // Fallback: Italic -> Regular -> CourierOblique
   pw.Font get italicFont =>
       _italicFont ?? _regularFont ?? pw.Font.courierOblique();
 }

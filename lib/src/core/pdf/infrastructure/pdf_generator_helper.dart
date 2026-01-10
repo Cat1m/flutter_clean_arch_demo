@@ -23,7 +23,7 @@ class PdfGeneratorHelper {
       theme: pw.ThemeData.withFont(
         base: PdfFontHelper.instance.regularFont,
         bold: PdfFontHelper.instance.boldFont,
-        // Có thể thêm italicFont nếu cần
+        italic: PdfFontHelper.instance.italicFont,
       ),
     );
 

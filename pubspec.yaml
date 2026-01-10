@@ -59,6 +59,9 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   path_provider: ^2.1.5
+  syncfusion_flutter_pdfviewer: ^32.1.22
+  share_plus: ^12.0.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

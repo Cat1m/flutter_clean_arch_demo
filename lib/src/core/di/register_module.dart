@@ -6,6 +6,7 @@ import 'package:reqres_in/src/core/auth/interceptors/auth_interceptor.dart';
 import 'package:reqres_in/src/core/auth/interceptors/token_interceptor.dart';
 import 'package:reqres_in/src/core/env/env_config.dart';
 import 'package:reqres_in/src/core/network/dio_client.dart';
+import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 import 'package:reqres_in/src/shared/data/remote/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,4 +54,10 @@ abstract class RegisterModule {
 
   @lazySingleton
   ApiService apiService(Dio dio) => ApiService(dio);
+
+  // --------------------------------------------------------
+  // PDF MODULE
+  // --------------------------------------------------------
+  @singleton
+  PdfFontHelper get pdfFontHelper => PdfFontHelper.instance;
 }

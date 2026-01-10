@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
 import '../domain/i_pdf_service.dart';
 import '../domain/pdf_config_model.dart';
 
+@LazySingleton(as: IPdfService)
 class PdfServiceImpl implements IPdfService {
   @override
   Future<PdfResult> generatePdf({
