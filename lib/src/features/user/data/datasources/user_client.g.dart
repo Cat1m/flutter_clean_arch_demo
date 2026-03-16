@@ -40,7 +40,7 @@ class _UserClient implements UserClient {
     try {
       _value = User.fromJson(_result.data!);
     } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
+      errorLogger?.logError(e, s, _options, response: _result);
       rethrow;
     }
     return _value;

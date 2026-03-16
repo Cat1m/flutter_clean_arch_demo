@@ -3,7 +3,8 @@
 /// Các module khác chỉ cần import file này là đủ.
 library;
 
-// 1. Client & Config
+export 'base_repository.dart';
+export 'cache_store.dart';
 export 'dio_client.dart';
 export 'error_interceptor.dart';
 export 'failures.dart';

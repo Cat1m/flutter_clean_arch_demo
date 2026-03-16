@@ -1,9 +1,9 @@
-Markdown
-
 # PDF Core Module
 
-Module xử lý tạo, xem và chia sẻ PDF theo chuẩn Clean Architecture.
+Module xử lý tạo, xem và chia sẻ PDF theo chuẩn Clean Architecture.  
 Hỗ trợ: Tiếng Việt (Unicode), Ảnh, Link/QR, Table, View đẹp (Syncfusion).
+
+---
 
 ## 1. Dependencies (pubspec.yaml)
 
@@ -26,37 +26,48 @@ dependencies:
   json_annotation: ^4.8.1
   injectable: ^2.3.2      # Nếu dùng DI
   get_it: ^7.6.0
-2. Setup Assets (Quan trọng)
-Tạo thư mục assets/fonts/ trong dự án.
+```
 
-Tải font Roboto (Regular, Bold, Italic) bỏ vào đó.
+---
 
-Khai báo trong pubspec.yaml:
+## 2. Setup Assets (Quan trọng)
 
-YAML
+1. Tạo thư mục `assets/fonts/` trong dự án.
 
+2. Tải font Roboto (Regular, Bold, Italic) bỏ vào đó.
+
+3. Khai báo trong `pubspec.yaml`:
+
+```yaml
 flutter:
   assets:
     - assets/fonts/Roboto-Regular.ttf
     - assets/fonts/Roboto-Bold.ttf
     - assets/fonts/Roboto-Italic.ttf
-Lưu ý: Kiểm tra lại đường dẫn trong file infrastructure/pdf_font_helper.dart nếu tên file khác.
+```
 
-3. Cấu hình DI (Injectable)
-Nếu dự án dùng injectable, hãy thêm vào RegisterModule (thường ở core/di/register_module.dart):
+**Lưu ý:** Kiểm tra lại đường dẫn trong file `infrastructure/pdf_font_helper.dart` nếu tên file khác.
 
-Dart
+---
 
+## 3. Cấu hình DI
+
+### Cách 1: Sử dụng Injectable (Khuyến nghị)
+
+Nếu dự án dùng injectable, hãy thêm vào `RegisterModule` (thường ở `core/di/register_module.dart`):
+
+```dart
 @module
 abstract class RegisterModule {
   // Đăng ký Singleton cho PdfFontHelper
   @singleton
   PdfFontHelper get pdfFontHelper => PdfFontHelper.instance;
 }
-Trong main.dart, kích hoạt tải font chạy ngầm (Fire & Forget):
+```
 
-Dart
+Trong `main.dart`, kích hoạt tải font chạy ngầm (Fire & Forget):
 
+```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
@@ -66,12 +77,78 @@ void main() async {
 
   runApp(const MyApp());
 }
-4. Cách sử dụng
-4.1. Tạo PDF Service
-Dart
+```
 
-// Inject service
+### Cách 2: Chỉ dùng GetIt (Không dùng Injectable)
+
+**Bước 1:** Xóa các annotation Injectable trong file `pdf_service_impl.dart`:
+
+```dart
+// XÓA dòng này
+// @LazySingleton(as: IPdfService)
+
+// XÓA import này
+// import 'package:injectable/injectable.dart';
+
+class PdfServiceImpl implements IPdfService {
+  // ... code như cũ
+}
+```
+
+**Bước 2:** Đăng ký thủ công trong `main.dart`:
+
+```dart
+import 'package:get_it/get_it.dart';
+
+final getIt = GetIt.instance;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Đăng ký services
+  getIt.registerLazySingleton<IPdfService>(() => PdfServiceImpl());
+  getIt.registerSingleton<PdfFontHelper>(PdfFontHelper.instance);
+  
+  // Kích hoạt load font
+  getIt<PdfFontHelper>().init();
+
+  runApp(const MyApp());
+}
+```
+
+### Cách 3: Không dùng DI (Đơn giản nhất)
+
+**Bước 1:** Xóa các annotation Injectable trong file `pdf_service_impl.dart` (như Cách 2).
+
+**Bước 2:** Tạo instance trực tiếp khi cần:
+
+```dart
+// Trong Widget hoặc Controller
+final pdfService = PdfServiceImpl();
+
+// Load font một lần khi app khởi động
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Kích hoạt load font
+  PdfFontHelper.instance.init();
+
+  runApp(const MyApp());
+}
+```
+
+---
+
+## 4. Cách sử dụng
+
+### 4.1. Tạo PDF Service
+
+```dart
+// CÁCH 1: Dùng DI (Injectable hoặc GetIt)
 final IPdfService pdfService = getIt<IPdfService>();
+
+// CÁCH 2: Không dùng DI
+final pdfService = PdfServiceImpl();
 
 // Chuẩn bị ảnh (nếu có)
 final avatar = await PdfImageHelper.loadNetworkImage('https://...');
@@ -86,9 +163,11 @@ final result = await pdfService.generatePdf(
     image: avatar,
   ),
 );
-4.2. Xử lý kết quả
-Dart
+```
 
+### 4.2. Xử lý kết quả
+
+```dart
 switch (result) {
   case PdfSuccess(:final file):
     // Mở viewer hoặc share
@@ -97,14 +176,19 @@ switch (result) {
     // Hiện lỗi
     break;
 }
-5. Lưu ý quan trọng (Troubleshooting)
-Lỗi: RenderBox was not laid out khi Back từ màn hình View
+```
+
+---
+
+## 5. Lưu ý quan trọng (Troubleshooting)
+
+### Lỗi: RenderBox was not laid out khi Back từ màn hình View
+
 Đây là lỗi xung đột giữa Syncfusion PDF Viewer và Animation chuyển trang của Flutter.
 
-Giải pháp: Dùng cơ chế "Safe Back" - Ẩn PDF đi trước khi Navigator.pop().
+**Giải pháp:** Dùng cơ chế "Safe Back" - Ẩn PDF đi trước khi `Navigator.pop()`.
 
-Dart
-
+```dart
 // Code mẫu trong Widget chứa SfPdfViewer
 void _onSafeBack() {
   setState(() => _isShowPdf = false); // Ẩn PDF thay bằng SizedBox
@@ -122,7 +206,14 @@ return PopScope(
   },
   child: Scaffold(...),
 );
-Lỗi: Font hiển thị ô vuông
-Nguyên nhân: Font chưa load xong hoặc sai đường dẫn assets.
+```
 
-Check: PdfFontHelper đã có cơ chế Backup tải từ mạng, nhưng hãy đảm bảo file assets local là chính xác để app chạy nhanh nhất.
+### Lỗi: Font hiển thị ô vuông
+
+**Nguyên nhân:** Font chưa load xong hoặc sai đường dẫn assets.
+
+**Giải pháp:** `PdfFontHelper` đã có cơ chế Backup tải từ mạng, nhưng hãy đảm bảo file assets local là chính xác để app chạy nhanh nhất.
+
+---
+
+## License
