@@ -1,6 +1,10 @@
 // lib/core/network/error_interceptor.dart
 
+import 'dart:developer' as dev;
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'network.dart';
 
@@ -17,6 +21,29 @@ class ErrorInterceptor extends Interceptor {
     this.messageKeys = const ['message', 'error', 'description', 'detail'],
     this.errorCodeKeys = const ['code', 'error_code', 'errorCode'],
   }) : _networkService = networkService;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // Nếu đã biết chắc offline (từ request trước fail) → reject ngay, không gửi request
+    // → Tránh chờ 15s timeout vô ích cho các request tiếp theo.
+    // Request đầu tiên khi mất mạng vẫn phải chờ (vì chưa biết offline).
+    final networkService = _networkService;
+    if (networkService != null && !networkService.lastKnownStatus) {
+      if (kDebugMode) {
+        dev.log(
+          '⏭️ Fast-fail: device offline — ${options.method} ${options.uri}',
+          name: 'ErrorInterceptor',
+        );
+      }
+      final error = DioException(
+        requestOptions: options,
+        error: const ConnectionFailure('No Internet Connection'),
+        type: DioExceptionType.connectionError,
+      );
+      return handler.reject(error);
+    }
+    handler.next(options);
+  }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
@@ -47,10 +74,11 @@ class ErrorInterceptor extends Interceptor {
         'Bad Certificate',
       ),
 
-      DioExceptionType.unknown => UnknownFailure(
-        'Unknown Error: ${err.message ?? "No details"}',
-        errorObject: err.error,
-      ),
+      // Khi mobile data bật nhưng không có internet thực tế,
+      // Dio wrap SocketException thành DioExceptionType.unknown
+      // (vì OS báo network interface vẫn UP).
+      // → Cần kiểm tra err.error bên trong để phân loại chính xác.
+      DioExceptionType.unknown => _handleUnknownError(err),
     };
 
     // Đồng bộ trạng thái mạng khi phát hiện lỗi kết nối
@@ -91,6 +119,44 @@ class ErrorInterceptor extends Interceptor {
     }
 
     return ServerFailure(message, statusCode: statusCode, errorCode: errorCode);
+  }
+
+  /// Phân loại lỗi [DioExceptionType.unknown].
+  ///
+  /// Khi mobile data bật nhưng không có internet thực tế, Dio vẫn cố gửi
+  /// request (vì OS báo interface UP). Kết quả:
+  /// - [SocketException]: TCP connection fail (Network unreachable, Connection refused)
+  /// - [HandshakeException]: TCP OK nhưng TLS handshake fail (packets mất giữa chừng)
+  /// - [HttpException]: Connection reset sau khi HTTP bắt đầu
+  ///
+  /// Tất cả đều kế thừa [IOException], và Dio đã handle [badCertificate]
+  /// riêng → nên check [IOException] an toàn, cover mọi case network.
+  Failure _handleUnknownError(DioException err) {
+    final error = err.error;
+
+    // Debug log để xem chính xác error type
+    if (kDebugMode) {
+      dev.log(
+        '🔍 Unknown error details:\n'
+        '   runtimeType: ${error.runtimeType}\n'
+        '   error: $error\n'
+        '   message: ${err.message}',
+        name: 'ErrorInterceptor',
+      );
+    }
+
+    // IOException bao gồm: SocketException, HandshakeException,
+    // HttpException, TlsException — tất cả đều là lỗi kết nối.
+    // (CertificateException cũng là IOException nhưng Dio đã tách ra
+    // thành DioExceptionType.badCertificate, không rơi vào đây.)
+    if (error is IOException) {
+      return const ConnectionFailure('No Internet Connection');
+    }
+
+    return UnknownFailure(
+      'Unknown Error: ${err.message ?? "No details"}',
+      errorObject: error,
+    );
   }
 
   // ✅ REFACTOR: Sử dụng Dart 3 Pattern Matching
