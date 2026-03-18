@@ -137,7 +137,11 @@ class LoggerInterceptor extends Interceptor {
       final authKeys = ['Authorization', 'authorization', 'auth-token'];
       for (final key in authKeys) {
         if (headers.containsKey(key)) {
-          _log('🔑 Token: ${headers[key]}');
+          final token = headers[key]?.toString() ?? '';
+          final masked = token.length > 20
+              ? '${token.substring(0, 10)}...${token.substring(token.length - 4)}'
+              : '***';
+          _log('🔑 Token: $masked');
           return;
         }
       }

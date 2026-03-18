@@ -49,10 +49,14 @@ class DioClient {
     // 1. Add custom interceptors từ bên ngoài (nếu có)
     dio.interceptors.addAll(interceptors);
 
-    // 2. Add RetryInterceptor (nếu enable) - Ưu tiên chạy sớm để handle retry
+    // 2. Add RetryInterceptor (nếu enable) - Truyền dio gốc để retry qua interceptor chain
     if (enableRetry) {
       dio.interceptors.add(
-        RetryInterceptor(maxRetries: maxRetries, retryDelay: retryDelay),
+        RetryInterceptor(
+          dio: dio,
+          maxRetries: maxRetries,
+          retryDelay: retryDelay,
+        ),
       );
     }
 

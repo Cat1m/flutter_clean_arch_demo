@@ -1,6 +1,7 @@
 // lib/src/core/network/base_repository.dart
 
 import 'dart:async';
+import 'dart:developer' as dev;
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -289,8 +290,13 @@ mixin BaseRepository {
       final data = await apiCall();
       await _saveToCache(cacheStore, cacheKey, toJson(data), ttl);
       onRevalidated?.call(data);
-    } catch (_) {
-      // Silently fail — caller đã có stale data
+    } catch (e) {
+      // Caller đã có stale data, chỉ log để debug
+      dev.log(
+        'Revalidate failed for key=$cacheKey: $e',
+        name: 'BaseRepository',
+        level: 900,
+      );
     }
   }
 }
