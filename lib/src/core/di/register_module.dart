@@ -6,6 +6,7 @@ import 'package:reqres_in/src/core/auth/interceptors/auth_interceptor.dart';
 import 'package:reqres_in/src/core/auth/interceptors/token_interceptor.dart';
 import 'package:reqres_in/src/core/env/env_config.dart';
 import 'package:reqres_in/src/core/network/dio_client.dart';
+import 'package:reqres_in/src/core/network/network_service.dart';
 import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 import 'package:reqres_in/src/shared/data/remote/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +30,7 @@ abstract class RegisterModule {
   DioClient dioClient(
     AuthInterceptor authInterceptor,
     TokenInterceptor tokenInterceptor,
+    NetworkService networkService,
   ) {
     // 1. Lấy URL từ Config
     final String baseUrl = EnvConfig.baseUrl;
@@ -45,6 +47,7 @@ abstract class RegisterModule {
     return DioClient(
       baseUrl: baseUrl,
       interceptors: [authInterceptor, tokenInterceptor],
+      networkService: networkService,
     );
   }
 

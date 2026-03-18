@@ -6,15 +6,24 @@ import 'network.dart';
 
 class ErrorInterceptor extends Interceptor {
   // Config keys
+  final NetworkService? _networkService;
   final List<int> authFailureStatusCodes;
   final List<String> messageKeys;
   final List<String> errorCodeKeys;
 
   ErrorInterceptor({
+    NetworkService? networkService,
     this.authFailureStatusCodes = const [401, 403],
     this.messageKeys = const ['message', 'error', 'description', 'detail'],
     this.errorCodeKeys = const ['code', 'error_code', 'errorCode'],
-  });
+  }) : _networkService = networkService;
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // Request thành công = chắc chắn online
+    _networkService?.reportConnectionSuccess();
+    handler.next(response);
+  }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
@@ -43,6 +52,11 @@ class ErrorInterceptor extends Interceptor {
         errorObject: err.error,
       ),
     };
+
+    // Đồng bộ trạng thái mạng khi phát hiện lỗi kết nối
+    if (failure is ConnectionFailure) {
+      _networkService?.reportConnectionFailure();
+    }
 
     // Reject với error mới là Failure
     final newErr = DioException(

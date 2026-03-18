@@ -5,8 +5,11 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import 'network_service.dart';
+
 class RetryInterceptor extends Interceptor {
   final Dio dio; // Dùng chính Dio gốc để retry qua cùng interceptor chain
+  final NetworkService? _networkService;
   final int maxRetries;
   final Duration retryDelay;
   final List<int> retryableStatusCodes;
@@ -14,6 +17,7 @@ class RetryInterceptor extends Interceptor {
 
   RetryInterceptor({
     required this.dio,
+    NetworkService? networkService,
     this.maxRetries = 3,
     this.retryDelay = const Duration(seconds: 1),
     this.retryableStatusCodes = const [408, 429, 500, 502, 503, 504],
@@ -23,7 +27,7 @@ class RetryInterceptor extends Interceptor {
       DioExceptionType.receiveTimeout,
       DioExceptionType.connectionError,
     ],
-  });
+  }) : _networkService = networkService;
 
   @override
   Future<void> onError(
@@ -73,6 +77,17 @@ class RetryInterceptor extends Interceptor {
   /// Kiểm tra xem lỗi có thuộc diện được retry hay không
   bool _shouldRetry(DioException err, int retryCount) {
     if (retryCount >= maxRetries) {
+      return false;
+    }
+
+    // Skip retry nếu đã biết chắc offline (tránh chờ vô ích)
+    if (_networkService != null && !_networkService.lastKnownStatus) {
+      if (kDebugMode) {
+        dev.log(
+          '⏭️ Skip retry — device offline',
+          name: 'RetryInterceptor',
+        );
+      }
       return false;
     }
 

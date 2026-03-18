@@ -22,6 +22,9 @@ class DioClient {
   final int maxRetries;
   final Duration retryDelay;
 
+  // Network status service (phối hợp connectivity_plus + Dio)
+  final NetworkService? networkService;
+
   DioClient({
     required this.baseUrl,
     this.interceptors = const [],
@@ -32,6 +35,7 @@ class DioClient {
     this.enableRetry = false,
     this.maxRetries = 3,
     this.retryDelay = const Duration(seconds: 1),
+    this.networkService,
   });
 
   // ✅ Private factory method - Clean & Direct
@@ -54,6 +58,7 @@ class DioClient {
       dio.interceptors.add(
         RetryInterceptor(
           dio: dio,
+          networkService: networkService,
           maxRetries: maxRetries,
           retryDelay: retryDelay,
         ),
@@ -64,7 +69,8 @@ class DioClient {
     dio.interceptors.add(LoggerInterceptor());
 
     // 4. Add ErrorInterceptor (Luôn nằm cuối cùng để catch & transform errors)
-    dio.interceptors.add(ErrorInterceptor());
+    // Nhận NetworkService để đồng bộ trạng thái mạng từ Dio response/error
+    dio.interceptors.add(ErrorInterceptor(networkService: networkService));
 
     return dio;
   }

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:reqres_in/src/core/di/injection.dart';
-import 'package:reqres_in/src/core/service/network_service.dart';
+import 'package:reqres_in/src/core/network/network.dart';
 
 /// Một widget "lắng nghe" trạng thái mạng và hiển thị SnackBar
 /// một cách tự động từ ScaffoldMessenger gốc.

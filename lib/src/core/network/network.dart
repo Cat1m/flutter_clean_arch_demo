@@ -11,4 +11,5 @@ export 'failures.dart';
 export 'logger_interceptor.dart';
 export 'models/log_mode.dart';
 export 'models/response_envelope.dart';
+export 'network_service.dart';
 export 'retry_interceptor.dart';

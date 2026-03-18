@@ -33,10 +33,10 @@ import '../auth/service/auth_event_service.dart' as _i671;
 import '../navigation/router_module.dart' as _i358;
 import '../network/cache_store.dart' as _i705;
 import '../network/dio_client.dart' as _i667;
+import '../network/network_service.dart' as _i1025;
 import '../pdf/domain/i_pdf_service.dart' as _i979;
 import '../pdf/infrastructure/pdf_font_helper.dart' as _i589;
 import '../pdf/infrastructure/pdf_service_impl.dart' as _i916;
-import '../service/network_service.dart' as _i724;
 import '../storage/secure_storage_service.dart' as _i666;
 import '../storage/settings_service.dart' as _i112;
 import 'register_module.dart' as _i291;
@@ -57,7 +57,7 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
-    gh.lazySingleton<_i724.NetworkService>(() => _i724.NetworkService());
+    gh.lazySingleton<_i1025.NetworkService>(() => _i1025.NetworkService());
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(),
     );
@@ -86,6 +86,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.dioClient(
         gh<_i164.AuthInterceptor>(),
         gh<_i823.TokenInterceptor>(),
+        gh<_i1025.NetworkService>(),
       ),
     );
     gh.lazySingleton<_i361.Dio>(
