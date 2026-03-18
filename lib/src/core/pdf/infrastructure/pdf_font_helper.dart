@@ -18,13 +18,12 @@ class PdfFontHelper {
 
   // Biến khóa để tránh Race Condition (Lỗi font lần đầu)
   Future<void>? _pendingInitFuture;
+  bool _initialized = false;
 
   /// Hàm khởi tạo an toàn (Safe Init)
   Future<void> init() async {
-    // 1. Nếu đủ 3 font rồi thì return luôn
-    if (_regularFont != null && _boldFont != null && _italicFont != null) {
-      return;
-    }
+    // 1. Đã khởi tạo rồi thì return luôn (dù fail, getters đã có fallback)
+    if (_initialized) return;
 
     // 2. Nếu đang chạy dở, bắt các request sau phải chờ chung
     if (_pendingInitFuture != null) {
@@ -37,7 +36,8 @@ class PdfFontHelper {
     // 4. Đợi xong
     await _pendingInitFuture;
 
-    // 5. Xóa khóa
+    // 5. Đánh dấu đã khởi tạo và xóa khóa
+    _initialized = true;
     _pendingInitFuture = null;
   }
 

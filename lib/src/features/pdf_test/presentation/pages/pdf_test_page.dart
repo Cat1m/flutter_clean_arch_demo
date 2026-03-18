@@ -19,6 +19,7 @@ class _PdfTestPageState extends State<PdfTestPage> {
   bool _isLoading = false; // Biến để hiện vòng xoay loading
 
   Future<void> _generateAndOpenBeautifulView(BuildContext context) async {
+    if (_isLoading) return; // chặn double-tap
     setState(() => _isLoading = true);
 
     // 1. Khởi tạo Service
@@ -41,10 +42,9 @@ class _PdfTestPageState extends State<PdfTestPage> {
       ),
     );
 
-    setState(() => _isLoading = false);
-
     // 3. Kiểm tra kết quả và Điều hướng
     if (!mounted) return;
+    setState(() => _isLoading = false);
 
     switch (result) {
       case PdfSuccess(:final file):
