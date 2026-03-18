@@ -25,8 +25,8 @@ class Envelope<T> {
 
   const Envelope({this.status, this.message, this.data});
 
-  // Getter check success nhanh
-  bool get isSuccess => (status ?? 200) >= 200 && (status ?? 200) < 300;
+  // Getter check success — null status = không xác định, không mặc định success
+  bool get isSuccess => status != null && status! >= 200 && status! < 300;
 
   factory Envelope.fromJson(
     Map<String, dynamic> json,

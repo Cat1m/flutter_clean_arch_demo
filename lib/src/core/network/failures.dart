@@ -50,14 +50,16 @@ class ServerFailure extends Failure {
 }
 
 // 2. Lỗi mạng (Timeout, No Internet)
+// ConnectionFailure không có statusCode/errorCode theo design —
+// params trong copyWith chỉ để thỏa mãn contract của Failure.copyWith.
 class ConnectionFailure extends Failure {
   const ConnectionFailure(super.message);
 
   @override
   ConnectionFailure copyWith({
     String? message,
-    int? statusCode,
-    String? errorCode,
+    int? statusCode, // Ignored — connection errors không có HTTP status
+    String? errorCode, // Ignored — connection errors không có error code
   }) {
     return ConnectionFailure(message ?? this.message);
   }
@@ -68,11 +70,17 @@ class ConnectionFailure extends Failure {
 }
 
 // 3. Lỗi Cache (Local DB)
+// CacheFailure không có statusCode/errorCode theo design —
+// params trong copyWith chỉ để thỏa mãn contract của Failure.copyWith.
 class CacheFailure extends Failure {
   const CacheFailure(super.message);
 
   @override
-  CacheFailure copyWith({String? message, int? statusCode, String? errorCode}) {
+  CacheFailure copyWith({
+    String? message,
+    int? statusCode, // Ignored — cache errors không có HTTP status
+    String? errorCode, // Ignored — cache errors không có error code
+  }) {
     return CacheFailure(message ?? this.message);
   }
 

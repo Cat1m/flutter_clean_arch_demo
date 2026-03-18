@@ -137,20 +137,27 @@ class LoggerInterceptor extends Interceptor {
       final authKeys = ['Authorization', 'authorization', 'auth-token'];
       for (final key in authKeys) {
         if (headers.containsKey(key)) {
-          final token = headers[key]?.toString() ?? '';
-          final masked = token.length > 20
-              ? '${token.substring(0, 10)}...${token.substring(token.length - 4)}'
-              : '***';
-          _log('🔑 Token: $masked');
+          _log('🔑 Token: ${_maskValue(headers[key]?.toString() ?? '')}');
           return;
         }
       }
     } else {
       _log('📂 Headers:');
+      const sensitiveKeys = {'authorization', 'auth-token', 'cookie', 'set-cookie'};
       headers.forEach((key, value) {
-        _log('  $key: $value');
+        final display = sensitiveKeys.contains(key.toLowerCase())
+            ? _maskValue(value.toString())
+            : value;
+        _log('  $key: $display');
       });
     }
+  }
+
+  String _maskValue(String value) {
+    if (value.length > 20) {
+      return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
+    }
+    return '***';
   }
 
   // ✅ Log query parameters

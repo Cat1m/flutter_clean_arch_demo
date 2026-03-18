@@ -83,6 +83,7 @@ class NetworkService {
     return _networkSubject.value;
   }
 
+  @disposeMethod
   void dispose() {
     _connectivitySub.cancel();
     _networkSubject.close();

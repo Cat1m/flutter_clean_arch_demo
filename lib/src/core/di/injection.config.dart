@@ -57,7 +57,10 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
-    gh.lazySingleton<_i1025.NetworkService>(() => _i1025.NetworkService());
+    gh.lazySingleton<_i1025.NetworkService>(
+      () => _i1025.NetworkService(),
+      dispose: (i) => i.dispose(),
+    );
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(),
     );

@@ -272,7 +272,8 @@ mixin BaseRepository {
   T? _tryParse<T>(String json, T Function(String json) fromJson) {
     try {
       return fromJson(json);
-    } catch (_) {
+    } catch (e) {
+      dev.log('Cache parse failed: $e', name: 'BaseRepository', level: 900);
       return null;
     }
   }

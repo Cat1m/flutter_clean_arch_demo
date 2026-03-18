@@ -52,8 +52,8 @@ class RetryInterceptor extends Interceptor {
       );
     }
 
-    // Delay (Exponential backoff)
-    final delay = retryDelay * newRetryCount;
+    // Delay (Exponential backoff: 1s, 2s, 4s, ...)
+    final delay = retryDelay * (1 << (newRetryCount - 1));
     await Future.delayed(delay);
 
     try {

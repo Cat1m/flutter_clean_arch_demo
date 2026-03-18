@@ -22,6 +22,9 @@ class DioClient {
   final int maxRetries;
   final Duration retryDelay;
 
+  // Logger (null hoặc disabled = không add vào chain)
+  final LoggerInterceptor? logger;
+
   // Network status service (phối hợp connectivity_plus + Dio)
   final NetworkService? networkService;
 
@@ -35,6 +38,7 @@ class DioClient {
     this.enableRetry = false,
     this.maxRetries = 3,
     this.retryDelay = const Duration(seconds: 1),
+    this.logger,
     this.networkService,
   });
 
@@ -65,8 +69,10 @@ class DioClient {
       );
     }
 
-    // 3. Add LoggerInterceptor (Luôn có để debug dễ dàng)
-    dio.interceptors.add(LoggerInterceptor());
+    // 3. Add LoggerInterceptor (chỉ khi được cung cấp và enabled)
+    if (logger case final l? when l.enabled) {
+      dio.interceptors.add(l);
+    }
 
     // 4. Add ErrorInterceptor (Luôn nằm cuối cùng để catch & transform errors)
     // Nhận NetworkService để đồng bộ trạng thái mạng từ Dio response/error
