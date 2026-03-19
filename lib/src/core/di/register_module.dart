@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/auth/interceptors/auth_interceptor.dart';
 import 'package:reqres_in/src/core/auth/interceptors/token_interceptor.dart';
 import 'package:reqres_in/src/core/env/env_config.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
 import 'package:reqres_in/src/core/network/dio_client.dart';
 import 'package:reqres_in/src/core/network/logger_interceptor.dart';
 import 'package:reqres_in/src/core/network/network_service.dart';
@@ -32,6 +33,7 @@ abstract class RegisterModule {
     AuthInterceptor authInterceptor,
     TokenInterceptor tokenInterceptor,
     NetworkService networkService,
+    ErrorEventService errorEventService,
   ) {
     // 1. Lấy URL từ Config
     final String baseUrl = EnvConfig.baseUrl;
@@ -49,6 +51,7 @@ abstract class RegisterModule {
       baseUrl: baseUrl,
       interceptors: [authInterceptor, tokenInterceptor],
       networkService: networkService,
+      errorEventService: errorEventService,
       logger: kDebugMode ? LoggerInterceptor.development() : null,
     );
   }

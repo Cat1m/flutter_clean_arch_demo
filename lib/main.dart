@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 // ✅ Gom nhóm import Core
 import 'package:reqres_in/src/core/di/injection.dart'; // Bỏ alias 'as di' nếu không bị trùng tên
+import 'package:reqres_in/src/core/error/error.dart';
 import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/core/widgets/network_snackbar_listener.dart';
@@ -56,7 +57,10 @@ class MyApp extends StatelessWidget {
             builder: (context, child) {
               return MultiBlocProvider(
                 providers: [BlocProvider.value(value: getIt<LoginCubit>())],
-                child: NetworkSnackbarListener(child: child!),
+                child: GlobalErrorListener(
+                  errorCubit: getIt<ErrorCubit>(),
+                  child: NetworkSnackbarListener(child: child!),
+                ),
               );
             },
           );

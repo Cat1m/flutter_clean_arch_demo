@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 
+import '../error/error_event_service.dart';
 import 'network.dart';
 
 class DioClient {
@@ -28,6 +29,9 @@ class DioClient {
   // Network status service (phối hợp connectivity_plus + Dio)
   final NetworkService? networkService;
 
+  // Error Bus service (auto-emit cross-cutting errors)
+  final ErrorEventService? errorEventService;
+
   DioClient({
     required this.baseUrl,
     this.interceptors = const [],
@@ -40,6 +44,7 @@ class DioClient {
     this.retryDelay = const Duration(seconds: 1),
     this.logger,
     this.networkService,
+    this.errorEventService,
   });
 
   // ✅ Private factory method - Clean & Direct
@@ -76,7 +81,12 @@ class DioClient {
 
     // 4. Add ErrorInterceptor (Luôn nằm cuối cùng để catch & transform errors)
     // Nhận NetworkService để đồng bộ trạng thái mạng từ Dio response/error
-    dio.interceptors.add(ErrorInterceptor(networkService: networkService));
+    dio.interceptors.add(
+      ErrorInterceptor(
+        networkService: networkService,
+        errorEventService: errorEventService,
+      ),
+    );
 
     return dio;
   }

@@ -6,21 +6,27 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../error/error_event.dart';
+import '../error/error_event_service.dart';
+import '../error/error_severity.dart';
 import 'network.dart';
 
 class ErrorInterceptor extends Interceptor {
   // Config keys
   final NetworkService? _networkService;
+  final ErrorEventService? _errorEventService;
   final List<int> authFailureStatusCodes;
   final List<String> messageKeys;
   final List<String> errorCodeKeys;
 
   ErrorInterceptor({
     NetworkService? networkService,
+    ErrorEventService? errorEventService,
     this.authFailureStatusCodes = const [401, 403],
     this.messageKeys = const ['message', 'error', 'description', 'detail'],
     this.errorCodeKeys = const ['code', 'error_code', 'errorCode'],
-  }) : _networkService = networkService;
+  })  : _networkService = networkService,
+        _errorEventService = errorEventService;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -85,6 +91,12 @@ class ErrorInterceptor extends Interceptor {
     if (failure is ConnectionFailure) {
       _networkService?.reportConnectionFailure();
     }
+
+    // Auto-emit cross-cutting errors lên Error Bus.
+    // Lần 1: Chỉ emit ServerFailure 500/503 (chưa có handler cũ).
+    // ConnectionFailure và AuthFailure chờ Lần 2 migrate
+    // (tránh duplicate với NetworkSnackbarListener / AuthEventService).
+    _maybeEmitToErrorBus(failure);
 
     // Reject với error mới là Failure
     final newErr = DioException(
@@ -157,6 +169,30 @@ class ErrorInterceptor extends Interceptor {
       'Unknown Error: ${err.message ?? "No details"}',
       errorObject: error,
     );
+  }
+
+  /// Auto-emit cross-cutting errors lên Error Bus (Lần 1).
+  ///
+  /// Chỉ emit ServerFailure có statusCode 500 hoặc 503.
+  /// ConnectionFailure, AuthFailure sẽ được migrate trong Lần 2.
+  void _maybeEmitToErrorBus(Failure failure) {
+    final errorEventService = _errorEventService;
+    if (errorEventService == null) return;
+
+    final ErrorSeverity? severity = switch (failure) {
+      ServerFailure(statusCode: 500 || 503) => ErrorSeverity.critical,
+      _ => null,
+    };
+
+    if (severity != null) {
+      errorEventService.emit(
+        ErrorEvent(
+          failure: failure,
+          severity: severity,
+          source: 'ErrorInterceptor',
+        ),
+      );
+    }
   }
 
   // ✅ REFACTOR: Sử dụng Dart 3 Pattern Matching

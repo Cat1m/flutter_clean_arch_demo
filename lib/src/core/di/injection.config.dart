@@ -30,6 +30,8 @@ import '../../shared/theme/theme_cubit.dart' as _i0;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../auth/service/auth_event_service.dart' as _i671;
+import '../error/error_cubit.dart' as _i538;
+import '../error/error_event_service.dart' as _i860;
 import '../navigation/router_module.dart' as _i358;
 import '../network/cache_store.dart' as _i705;
 import '../network/dio_client.dart' as _i667;
@@ -56,6 +58,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
+    gh.lazySingleton<_i860.ErrorEventService>(
+      () => _i860.ErrorEventService(),
+      dispose: (i) => i.dispose(),
+    );
     gh.lazySingleton<_i583.GoRouter>(() => routerModule.router);
     gh.lazySingleton<_i1025.NetworkService>(
       () => _i1025.NetworkService(),
@@ -65,6 +71,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i666.SecureStorageService(),
     );
     gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
+    gh.lazySingleton<_i538.ErrorCubit>(
+      () => _i538.ErrorCubit(
+        gh<_i860.ErrorEventService>(),
+        dedupWindow: gh<Duration>(),
+      ),
+    );
     gh.lazySingleton<_i705.CacheStore>(() => _i705.InMemoryCacheStore());
     gh.lazySingleton<_i705.CacheStore>(
       () => _i705.SharedPrefsCacheStore(gh<_i460.SharedPreferences>()),
@@ -90,6 +102,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i164.AuthInterceptor>(),
         gh<_i823.TokenInterceptor>(),
         gh<_i1025.NetworkService>(),
+        gh<_i860.ErrorEventService>(),
       ),
     );
     gh.lazySingleton<_i361.Dio>(
