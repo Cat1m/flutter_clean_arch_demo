@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reqres_in/src/core/auth/service/auth_event_service.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
+import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 
 /// Interceptor chuyên xử lý việc Refresh Token khi gặp lỗi 401.
@@ -9,9 +12,9 @@ import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 @lazySingleton
 class TokenInterceptor extends QueuedInterceptor {
   final SecureStorageService _storageService;
-  final AuthEventService _authEventService;
+  final ErrorEventService _errorEventService;
 
-  TokenInterceptor(this._storageService, this._authEventService);
+  TokenInterceptor(this._storageService, this._errorEventService);
 
   @override
   Future<void> onError(
@@ -28,9 +31,9 @@ class TokenInterceptor extends QueuedInterceptor {
 
       final refreshToken = await _storageService.getRefreshToken();
 
-      // 1. Nếu không có refresh token -> Logout ngay
+      // 1. Nếu không có refresh token -> Notify session expired qua Error Bus
       if (refreshToken == null) {
-        _authEventService.notifySessionExpired();
+        _notifySessionExpired();
         return handler.next(err); // Chuyền lỗi đi tiếp
       }
 
@@ -44,13 +47,11 @@ class TokenInterceptor extends QueuedInterceptor {
                 err.requestOptions.baseUrl, // Dùng lại baseUrl của request lỗi
             headers: {
               'Content-Type': 'application/json',
-              // Thêm các header cần thiết khác nếu server yêu cầu
             },
           ),
         );
 
         // Gọi API Refresh (Hardcode path '/auth/refresh' vì đây là logic cốt lõi của Auth)
-        // Nếu path này thay đổi, sửa trực tiếp tại đây.
         if (kDebugMode) {
           print('🔄 [TokenInterceptor] Refreshing token...');
         }
@@ -61,9 +62,9 @@ class TokenInterceptor extends QueuedInterceptor {
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          // 3. Parse kết quả (Giả sử trả về accessToken và refreshToken mới)
+          // 3. Parse kết quả
           final newAccessToken = response.data['accessToken'];
-          final newRefreshToken = response.data['refreshToken']; // Có thể null
+          final newRefreshToken = response.data['refreshToken'];
 
           // 4. Lưu lại vào Storage
           if (newAccessToken != null) {
@@ -83,18 +84,13 @@ class TokenInterceptor extends QueuedInterceptor {
           final opts = err.requestOptions;
           opts.headers['Authorization'] = 'Bearer $newAccessToken';
 
-          // Dùng 1 Dio instance sạch để retry
           final retryDio = Dio(BaseOptions(baseUrl: opts.baseUrl));
-
-          // Quan trọng: Request retry vẫn cần có khả năng map lỗi
-          // nhưng không nên add TokenInterceptor vào để tránh loop.
-          // Nếu anh muốn log retry, có thể add logger.
           final clonedRequest = await retryDio.fetch(opts);
 
           return handler.resolve(clonedRequest);
         } else {
-          // Server trả về không phải 200 (ví dụ refresh token cũng hết hạn)
-          _authEventService.notifySessionExpired();
+          // Server trả về không phải 200 (refresh token cũng hết hạn)
+          _notifySessionExpired();
           return handler.next(err);
         }
       } catch (e) {
@@ -102,12 +98,24 @@ class TokenInterceptor extends QueuedInterceptor {
         if (kDebugMode) {
           print('❌ [TokenInterceptor] Refresh Failed: $e');
         }
-        _authEventService.notifySessionExpired();
+        _notifySessionExpired();
         return handler.next(err);
       }
     }
 
     // Các lỗi khác (404, 500...) cho đi qua
     return handler.next(err);
+  }
+
+  /// Emit fatal AuthFailure lên Error Bus.
+  /// LoginCubit listen event này → emit AuthSessionExpired → GoRouter redirect.
+  void _notifySessionExpired() {
+    _errorEventService.emit(
+      ErrorEvent(
+        failure: AuthFailure.tokenExpired,
+        severity: ErrorSeverity.fatal,
+        source: 'TokenInterceptor',
+      ),
+    );
   }
 }

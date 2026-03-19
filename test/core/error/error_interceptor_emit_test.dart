@@ -95,9 +95,9 @@ void main() {
       expect(captured, isNull);
     });
 
-    test('AuthFailure 401 → KHÔNG emit (chờ Lần 2 migrate)', () async {
-      ErrorEvent? captured;
-      errorEventService.errorStream.listen((e) => captured = e);
+    test('AuthFailure 401 → emit fatal lên Error Bus', () async {
+      final completer = Completer<ErrorEvent>();
+      errorEventService.errorStream.listen(completer.complete);
 
       final handler = _MockErrorHandler();
       final err = DioException(
@@ -107,14 +107,18 @@ void main() {
       );
 
       interceptor.onError(err, handler);
-      await Future<void>.delayed(Duration.zero);
 
-      expect(captured, isNull);
+      final event = await completer.future.timeout(
+        const Duration(seconds: 1),
+      );
+
+      expect(event.failure, isA<AuthFailure>());
+      expect(event.severity, ErrorSeverity.fatal);
     });
 
-    test('ConnectionFailure → KHÔNG emit (chờ Lần 2 migrate)', () async {
-      ErrorEvent? captured;
-      errorEventService.errorStream.listen((e) => captured = e);
+    test('ConnectionFailure → emit warning lên Error Bus', () async {
+      final completer = Completer<ErrorEvent>();
+      errorEventService.errorStream.listen(completer.complete);
 
       final handler = _MockErrorHandler();
       final err = DioException(
@@ -123,9 +127,13 @@ void main() {
       );
 
       interceptor.onError(err, handler);
-      await Future<void>.delayed(Duration.zero);
 
-      expect(captured, isNull);
+      final event = await completer.future.timeout(
+        const Duration(seconds: 1),
+      );
+
+      expect(event.failure, isA<ConnectionFailure>());
+      expect(event.severity, ErrorSeverity.warning);
     });
 
     test('onError vẫn reject DioException như bình thường', () {

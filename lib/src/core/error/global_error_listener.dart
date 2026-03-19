@@ -44,6 +44,14 @@ class GlobalErrorListener extends StatelessWidget {
         final event = state.event;
         final failure = event.failure;
 
+        // Fatal AuthFailure được LoginCubit xử lý
+        // (listen ErrorEventService → emit AuthSessionExpired → GoRouter redirect).
+        // GlobalErrorListener không cần handle lại.
+        if (event.severity == ErrorSeverity.fatal && failure is AuthFailure) {
+          errorCubit.dismiss();
+          return;
+        }
+
         switch (event.severity) {
           case ErrorSeverity.info:
           case ErrorSeverity.warning:

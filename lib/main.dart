@@ -9,7 +9,6 @@ import 'package:reqres_in/src/core/di/injection.dart'; // Bỏ alias 'as di' n�
 import 'package:reqres_in/src/core/error/error.dart';
 import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 import 'package:reqres_in/src/core/ui/ui.dart';
-import 'package:reqres_in/src/core/widgets/network_snackbar_listener.dart';
 
 // ✅ Gom nhóm import Feature
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
@@ -59,7 +58,7 @@ class MyApp extends StatelessWidget {
                 providers: [BlocProvider.value(value: getIt<LoginCubit>())],
                 child: GlobalErrorListener(
                   errorCubit: getIt<ErrorCubit>(),
-                  child: NetworkSnackbarListener(child: child!),
+                  child: child!,
                 ),
               );
             },

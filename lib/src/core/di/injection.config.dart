@@ -29,7 +29,6 @@ import '../../shared/data/remote/file_upload_service.dart' as _i931;
 import '../../shared/theme/theme_cubit.dart' as _i0;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
-import '../auth/service/auth_event_service.dart' as _i671;
 import '../error/error_cubit.dart' as _i538;
 import '../error/error_event_service.dart' as _i860;
 import '../navigation/router_module.dart' as _i358;
@@ -53,7 +52,6 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     final routerModule = _$RouterModule();
     gh.singleton<_i589.PdfFontHelper>(() => registerModule.pdfFontHelper);
-    gh.lazySingleton<_i671.AuthEventService>(() => _i671.AuthEventService());
     await gh.lazySingletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,
       preResolve: true,
@@ -69,6 +67,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(),
+    );
+    gh.lazySingleton<_i823.TokenInterceptor>(
+      () => _i823.TokenInterceptor(
+        gh<_i666.SecureStorageService>(),
+        gh<_i860.ErrorEventService>(),
+      ),
     );
     gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
     gh.lazySingleton<_i705.CacheStore>(() => _i705.InMemoryCacheStore());
@@ -87,12 +91,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i164.AuthInterceptor>(
       () => _i164.AuthInterceptor(gh<_i666.SecureStorageService>()),
-    );
-    gh.lazySingleton<_i823.TokenInterceptor>(
-      () => _i823.TokenInterceptor(
-        gh<_i666.SecureStorageService>(),
-        gh<_i671.AuthEventService>(),
-      ),
     );
     gh.lazySingleton<_i667.DioClient>(
       () => registerModule.dioClient(
@@ -124,14 +122,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i422.QuoteCubit>(
       () => _i422.QuoteCubit(gh<_i48.QuoteRepository>()),
     );
+    gh.lazySingleton<_i480.UserRepository>(
+      () => _i57.UserRepositoryImpl(gh<_i1053.ApiService>()),
+    );
     gh.singleton<_i281.LoginCubit>(
       () => _i281.LoginCubit(
         gh<_i871.AuthRepository>(),
-        gh<_i671.AuthEventService>(),
+        gh<_i860.ErrorEventService>(),
       ),
-    );
-    gh.lazySingleton<_i480.UserRepository>(
-      () => _i57.UserRepositoryImpl(gh<_i1053.ApiService>()),
     );
     gh.factory<_i434.UserCubit>(
       () => _i434.UserCubit(gh<_i480.UserRepository>()),

@@ -92,10 +92,7 @@ class ErrorInterceptor extends Interceptor {
       _networkService?.reportConnectionFailure();
     }
 
-    // Auto-emit cross-cutting errors lên Error Bus.
-    // Lần 1: Chỉ emit ServerFailure 500/503 (chưa có handler cũ).
-    // ConnectionFailure và AuthFailure chờ Lần 2 migrate
-    // (tránh duplicate với NetworkSnackbarListener / AuthEventService).
+    // Auto-emit cross-cutting errors lên Error Bus
     _maybeEmitToErrorBus(failure);
 
     // Reject với error mới là Failure
@@ -171,15 +168,20 @@ class ErrorInterceptor extends Interceptor {
     );
   }
 
-  /// Auto-emit cross-cutting errors lên Error Bus (Lần 1).
+  /// Auto-emit cross-cutting errors lên Error Bus.
   ///
-  /// Chỉ emit ServerFailure có statusCode 500 hoặc 503.
-  /// ConnectionFailure, AuthFailure sẽ được migrate trong Lần 2.
+  /// Mapping:
+  /// - [ConnectionFailure] → warning (snackbar)
+  /// - [AuthFailure] → fatal (LoginCubit listen → GoRouter redirect)
+  /// - [ServerFailure] 500/503 → critical (dialog)
+  /// - Các loại khác → không emit (cubit/repo tự handle)
   void _maybeEmitToErrorBus(Failure failure) {
     final errorEventService = _errorEventService;
     if (errorEventService == null) return;
 
     final ErrorSeverity? severity = switch (failure) {
+      ConnectionFailure() => ErrorSeverity.warning,
+      AuthFailure() => ErrorSeverity.fatal,
       ServerFailure(statusCode: 500 || 503) => ErrorSeverity.critical,
       _ => null,
     };
