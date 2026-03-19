@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../domain/pdf_config_model.dart';
 import 'pdf_font_helper.dart';

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -23,7 +24,16 @@ class ErrorCubit extends Cubit<ErrorState> {
   /// Khoảng thời gian dedup. Mặc định 3 giây.
   final Duration dedupWindow;
 
-  ErrorCubit(
+  /// Constructor chính cho DI (Injectable).
+  ErrorCubit(this._errorEventService)
+    : dedupWindow = const Duration(seconds: 3),
+      super(const ErrorIdle()) {
+    _subscription = _errorEventService.errorStream.listen(_onErrorEvent);
+  }
+
+  /// Constructor cho testing — cho phép override [dedupWindow].
+  @visibleForTesting
+  ErrorCubit.withConfig(
     this._errorEventService, {
     this.dedupWindow = const Duration(seconds: 3),
   }) : super(const ErrorIdle()) {

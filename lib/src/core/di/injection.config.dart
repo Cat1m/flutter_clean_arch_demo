@@ -71,12 +71,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i666.SecureStorageService(),
     );
     gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
-    gh.lazySingleton<_i538.ErrorCubit>(
-      () => _i538.ErrorCubit(
-        gh<_i860.ErrorEventService>(),
-        dedupWindow: gh<Duration>(),
-      ),
-    );
     gh.lazySingleton<_i705.CacheStore>(() => _i705.InMemoryCacheStore());
     gh.lazySingleton<_i705.CacheStore>(
       () => _i705.SharedPrefsCacheStore(gh<_i460.SharedPreferences>()),
@@ -87,6 +81,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i0.ThemeCubit>(
       () => _i0.ThemeCubit(gh<_i460.SharedPreferences>()),
+    );
+    gh.lazySingleton<_i538.ErrorCubit>(
+      () => _i538.ErrorCubit(gh<_i860.ErrorEventService>()),
     );
     gh.lazySingleton<_i164.AuthInterceptor>(
       () => _i164.AuthInterceptor(gh<_i666.SecureStorageService>()),

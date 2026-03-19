@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../navigation/router_module.dart';
 import '../network/failures.dart';
 import 'error_cubit.dart';
 import 'error_severity.dart';
@@ -14,6 +15,10 @@ import 'error_state.dart';
 /// - info/warning → Snackbar
 /// - critical → Dialog
 /// - fatal → Redirect (AuthFailure → login, khác → error page)
+///
+/// Vì widget này nằm **trên** Navigator trong widget tree
+/// (MaterialApp.builder), nên dùng [rootNavigatorKey] để lấy
+/// context bên dưới Navigator cho showDialog/GoRouter.
 class GlobalErrorListener extends StatelessWidget {
   final ErrorCubit errorCubit;
   final Widget child;
@@ -31,6 +36,11 @@ class GlobalErrorListener extends StatelessWidget {
       listener: (context, state) {
         if (state is! ErrorReceived) return;
 
+        // Lấy context từ Navigator (bên dưới MaterialApp)
+        // thay vì context của BlocListener (bên trên Navigator).
+        final navContext = rootNavigatorKey.currentContext;
+        if (navContext == null) return;
+
         final event = state.event;
         final failure = event.failure;
 
@@ -39,9 +49,9 @@ class GlobalErrorListener extends StatelessWidget {
           case ErrorSeverity.warning:
             _showSnackbar(context, failure, event.severity);
           case ErrorSeverity.critical:
-            _showDialog(context, failure);
+            _showDialog(navContext, failure);
           case ErrorSeverity.fatal:
-            _handleFatal(context, failure);
+            _handleFatal(navContext, failure);
         }
 
         // Reset state sau khi đã xử lý
@@ -51,6 +61,8 @@ class GlobalErrorListener extends StatelessWidget {
     );
   }
 
+  /// Snackbar dùng [ScaffoldMessenger] — context của MaterialApp.builder
+  /// là OK vì ScaffoldMessenger nằm ở tầng MaterialApp.
   void _showSnackbar(
     BuildContext context,
     Failure failure,
@@ -77,9 +89,10 @@ class GlobalErrorListener extends StatelessWidget {
       );
   }
 
-  void _showDialog(BuildContext context, Failure failure) {
+  /// Dialog cần [navContext] — context bên dưới Navigator.
+  void _showDialog(BuildContext navContext, Failure failure) {
     showDialog<void>(
-      context: context,
+      context: navContext,
       barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
@@ -96,13 +109,13 @@ class GlobalErrorListener extends StatelessWidget {
     );
   }
 
-  void _handleFatal(BuildContext context, Failure failure) {
+  void _handleFatal(BuildContext navContext, Failure failure) {
     if (failure is AuthFailure) {
       // Session expired → redirect login
-      GoRouter.of(context).go('/login');
+      GoRouter.of(navContext).go('/login');
     } else {
-      // Các fatal khác → show dialog rồi để user tự xử lý
-      _showDialog(context, failure);
+      // Các fatal khác → show dialog
+      _showDialog(navContext, failure);
     }
   }
 }

@@ -1,9 +1,11 @@
 // lib/src/core/navigation/router_module.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/di/injection.dart'; // Để dùng getIt
+import 'package:reqres_in/src/core/error/debug_error_bus_page.dart';
 import 'package:reqres_in/src/core/navigation/custom_dialog_page.dart';
 import 'package:reqres_in/src/core/navigation/stream_listenable.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
@@ -11,7 +13,6 @@ import 'package:reqres_in/src/features/auth/presentation/bloc/auth_state.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
 import 'package:reqres_in/src/features/auth/presentation/pages/login_page.dart';
 import 'package:reqres_in/src/features/auth/presentation/pages/session_expired_page.dart';
-// Import tất cả các trang bạn cần cho route
 import 'package:reqres_in/src/features/auth/presentation/pages/splash_page.dart';
 import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
 import 'package:reqres_in/src/features/pdf_test/presentation/pages/pdf_test_page.dart';
@@ -19,6 +20,11 @@ import 'package:reqres_in/src/features/user/presentation/pages/user_page.dart';
 
 // (Bạn cũng cần import LoginResponse nếu dùng state.extra cho HomePage)
 // import 'package:reqres_in/src/features/auth/models/auth_models.dart';
+
+/// Key cho root Navigator — dùng để show dialog/navigate
+/// từ những nơi nằm trên Navigator trong widget tree
+/// (ví dụ: GlobalErrorListener trong MaterialApp.builder).
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 @module // 1. Đánh dấu đây là một Module
 abstract class RouterModule {
@@ -29,6 +35,9 @@ abstract class RouterModule {
     final loginCubit = getIt<LoginCubit>();
 
     return GoRouter(
+      // Navigator key — cho phép truy cập Navigator context từ bên ngoài
+      navigatorKey: rootNavigatorKey,
+
       // 4. Lắng nghe Cubit
       refreshListenable: StreamListenable(loginCubit.stream),
 
@@ -56,6 +65,12 @@ abstract class RouterModule {
           path: '/pdf-test',
           builder: (context, state) => const PdfTestPage(),
         ),
+        // Debug Error Bus — chỉ hiện trong debug mode
+        if (kDebugMode)
+          GoRoute(
+            path: '/debug-error-bus',
+            builder: (context, state) => const DebugErrorBusPage(),
+          ),
         GoRoute(
           path: '/logout-confirm',
           pageBuilder: (context, state) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,12 @@ class HomeView extends StatelessWidget {
         // title: const Text('Trang chủ'), // Đã setup trong AppTheme
         automaticallyImplyLeading: false,
         actions: [
+          if (kDebugMode)
+            IconButton(
+              icon: const Icon(Icons.bug_report_outlined),
+              tooltip: 'Debug Error Bus',
+              onPressed: () => context.push('/debug-error-bus'),
+            ),
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
             tooltip: 'Tạo CV PDF',
