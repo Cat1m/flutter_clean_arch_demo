@@ -76,7 +76,7 @@ class ErrorInterceptor extends Interceptor {
 
       DioExceptionType.cancel => const UnknownFailure('Request Cancelled'),
 
-      DioExceptionType.badCertificate => const UnknownFailure(
+      DioExceptionType.badCertificate => const CertificateFailure(
         'Bad Certificate',
       ),
 
@@ -154,10 +154,17 @@ class ErrorInterceptor extends Interceptor {
       );
     }
 
-    // IOException bao gồm: SocketException, HandshakeException,
+    // HandshakeException chứa "CERTIFICATE" → lỗi certificate, không phải mạng.
+    // Khi badCertificateCallback trả false, HttpClient throw HandshakeException
+    // với osError chứa "CERTIFICATE_VERIFY_FAILED" — Dio wrap thành unknown.
+    // Dùng toString() vì certificate info nằm trong osError, không phải message.
+    if (error is HandshakeException &&
+        error.toString().toUpperCase().contains('CERTIFICATE')) {
+      return const CertificateFailure('Bad Certificate');
+    }
+
+    // IOException bao gồm: SocketException, HandshakeException (non-cert),
     // HttpException, TlsException — tất cả đều là lỗi kết nối.
-    // (CertificateException cũng là IOException nhưng Dio đã tách ra
-    // thành DioExceptionType.badCertificate, không rơi vào đây.)
     if (error is IOException) {
       return const ConnectionFailure('No Internet Connection');
     }
@@ -182,6 +189,7 @@ class ErrorInterceptor extends Interceptor {
     final ErrorSeverity? severity = switch (failure) {
       ConnectionFailure() => ErrorSeverity.warning,
       AuthFailure() => ErrorSeverity.fatal,
+      CertificateFailure() => ErrorSeverity.critical,
       ServerFailure(statusCode: 500 || 503) => ErrorSeverity.critical,
       _ => null,
     };

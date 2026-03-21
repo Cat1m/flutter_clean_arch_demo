@@ -38,6 +38,10 @@ extension FailureExtension on Failure {
       ServerFailure(statusCode: 503) => 'Dịch vụ tạm thời không khả dụng.',
       ServerFailure(message: final msg) => msg,
 
+      // Certificate Failures
+      CertificateFailure() =>
+        'Kết nối không an toàn. Chứng chỉ bảo mật không hợp lệ.',
+
       // Cache Failures
       CacheFailure(message: final msg) => 'Lỗi đọc dữ liệu cục bộ: $msg',
 
@@ -61,6 +65,7 @@ extension FailureExtension on Failure {
   String toShortMessage() {
     return switch (this) {
       ConnectionFailure() => 'Không có kết nối mạng',
+      CertificateFailure() => 'Chứng chỉ không hợp lệ',
       AuthFailure() => 'Phiên đăng nhập hết hạn',
       ServerFailure(statusCode: 404) => 'Không tìm thấy',
       ServerFailure(statusCode: 500) => 'Lỗi máy chủ',
@@ -74,6 +79,7 @@ extension FailureExtension on Failure {
   String toDialogTitle() {
     return switch (this) {
       ConnectionFailure() => 'Lỗi kết nối',
+      CertificateFailure() => 'Lỗi chứng chỉ',
       AuthFailure() => 'Lỗi xác thực',
       ServerFailure() => 'Lỗi máy chủ',
       CacheFailure() => 'Lỗi dữ liệu',
@@ -116,6 +122,7 @@ extension FailureExtension on Failure {
   String get icon {
     return switch (this) {
       ConnectionFailure() => '📡',
+      CertificateFailure() => '🔒',
       AuthFailure() => '🔐',
       ServerFailure() => '⚠️',
       CacheFailure() => '💾',

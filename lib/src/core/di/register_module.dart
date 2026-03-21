@@ -47,12 +47,32 @@ abstract class RegisterModule {
     }
 
     // 3. Inject vào Client (Client giờ không cần lo logic này nữa)
+    //
+    // [Certificate Pinning — Hướng dẫn khi cần dùng CA nội bộ]
+    //
+    // Bước 1: Đổi method signature:
+    //   @preResolve                          ← thêm annotation
+    //   @lazySingleton
+    //   Future<DioClient> dioClient(...)     ← đổi return type sang Future
+    //
+    // Bước 2: Đặt file .pem vào assets/certs/ và khai báo pubspec.yaml:
+    //   flutter:
+    //     assets:
+    //       - assets/certs/
+    //
+    // Bước 3: Bỏ comment 2 dòng dưới:
+    //   final certBytes = await rootBundle.load('assets/certs/company_ca.pem');
+    //   → rồi thêm vào DioClient(): trustedCertificates: [certBytes.buffer.asUint8List()],
+    //
+    // Bước 4: Chạy lại build_runner.
+    //
     return DioClient(
       baseUrl: baseUrl,
       interceptors: [authInterceptor, tokenInterceptor],
       networkService: networkService,
       errorEventService: errorEventService,
       logger: kDebugMode ? LoggerInterceptor.development() : null,
+      allowBadCertificate: EnvConfig.allowBadCertificate,
     );
   }
 

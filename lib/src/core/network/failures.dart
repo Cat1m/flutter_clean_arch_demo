@@ -20,6 +20,7 @@ sealed class Failure extends Equatable {
   bool get isAuthError => this is AuthFailure;
   bool get isCacheError => this is CacheFailure;
   bool get isUnknownError => this is UnknownFailure;
+  bool get isCertificateError => this is CertificateFailure;
 
   // ✅ Copy with cho flexibility
   Failure copyWith({String? message, int? statusCode, String? errorCode});
@@ -110,7 +111,27 @@ class AuthFailure extends Failure {
   static const invalidCredentials = AuthFailure('Invalid credentials');
 }
 
-// 5. Lỗi không xác định
+// 5. Lỗi Certificate (SSL/TLS)
+// CertificateFailure không có statusCode/errorCode theo design —
+// params trong copyWith chỉ để thỏa mãn contract của Failure.copyWith.
+class CertificateFailure extends Failure {
+  const CertificateFailure(super.message);
+
+  @override
+  CertificateFailure copyWith({
+    String? message,
+    int? statusCode, // Ignored — certificate errors không có HTTP status
+    String? errorCode, // Ignored — certificate errors không có error code
+  }) {
+    return CertificateFailure(message ?? this.message);
+  }
+
+  // ✅ Predefined certificate failures
+  static const badCertificate = CertificateFailure('Bad Certificate');
+  static const untrusted = CertificateFailure('Untrusted Certificate');
+}
+
+// 6. Lỗi không xác định
 class UnknownFailure extends Failure {
   final Object? errorObject; // Lưu lại object lỗi gốc để debug nếu cần
 

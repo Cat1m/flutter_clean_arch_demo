@@ -15,6 +15,16 @@ class EnvConfig {
     EnvMode.ngrok: 'https://your-ngrok-id.ngrok-free.app',
   };
 
+  /// Cho phép self-signed certificate.
+  /// Chỉ bật ở local/dev, production luôn false.
+  static bool get allowBadCertificate => switch (mode) {
+    EnvMode.prod => false,
+    EnvMode.dev ||
+    EnvMode.localAndroid ||
+    EnvMode.localIos ||
+    EnvMode.ngrok => true,
+  };
+
   /// Logic chọn URL:
   /// - Nếu là Prod: Lấy từ file .env (Bảo mật)
   /// - Nếu là Dev/Local: Lấy từ Map cấu hình bên trên

@@ -1,6 +1,10 @@
 // lib/core/network/dio_client.dart
 
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 
 import '../error/error_event_service.dart';
 import 'network.dart';
@@ -32,6 +36,13 @@ class DioClient {
   // Error Bus service (auto-emit cross-cutting errors)
   final ErrorEventService? errorEventService;
 
+  // Config cho SSL/TLS certificate
+  // allowBadCertificate: Cho phép self-signed cert (dev/staging). Mặc định: false
+  final bool allowBadCertificate;
+
+  // trustedCertificates: Danh sách PEM bytes để pin certificate cụ thể (enterprise/internal CA)
+  final List<Uint8List> trustedCertificates;
+
   DioClient({
     required this.baseUrl,
     this.interceptors = const [],
@@ -45,6 +56,8 @@ class DioClient {
     this.logger,
     this.networkService,
     this.errorEventService,
+    this.allowBadCertificate = false,
+    this.trustedCertificates = const [],
   });
 
   // ✅ Private factory method - Clean & Direct
@@ -57,6 +70,32 @@ class DioClient {
         sendTimeout: sendTimeout,
         contentType: contentType,
       ),
+    );
+
+    // 0. Config SSL/TLS certificate (chỉ áp dụng cho native platform - mobile/desktop)
+    //
+    // LUÔN set badCertificateCallback để Dio phân loại chính xác:
+    // - Có callback trả false → DioExceptionType.badCertificate → CertificateFailure
+    // - Không có callback → HandshakeException → DioExceptionType.unknown → ConnectionFailure (sai!)
+    //
+    // Khi allowBadCertificate = true: callback trả true → cert được chấp nhận
+    // Khi allowBadCertificate = false: callback trả false → Dio throw badCertificate
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        // Nếu có trusted certificates → tạo SecurityContext custom
+        if (trustedCertificates.isNotEmpty) {
+          final context = SecurityContext();
+          for (final cert in trustedCertificates) {
+            context.setTrustedCertificatesBytes(cert);
+          }
+          return HttpClient(context: context)
+            ..badCertificateCallback = (cert, host, port) =>
+                allowBadCertificate;
+        }
+
+        return HttpClient()
+          ..badCertificateCallback = (cert, host, port) => allowBadCertificate;
+      },
     );
 
     // 1. Add custom interceptors từ bên ngoài (nếu có)
