@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 
 class PdfFontHelper {
   PdfFontHelper._();
@@ -51,7 +51,7 @@ class PdfFontHelper {
         _loadItalic(), // ✅ Đã thêm lại
       ]);
     } catch (e) {
-      if (kDebugMode) print('PDF Font Error: $e');
+      AppLogger.error('PDF Font Error', tag: 'PdfFontHelper', error: e);
     }
   }
 

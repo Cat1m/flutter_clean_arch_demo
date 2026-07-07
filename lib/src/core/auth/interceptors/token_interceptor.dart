@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/error/error_event.dart';
 import 'package:reqres_in/src/core/error/error_event_service.dart';
 import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 
@@ -23,11 +23,10 @@ class TokenInterceptor extends QueuedInterceptor {
   ) async {
     // Chỉ xử lý khi lỗi là 401 Unauthorized
     if (err.response?.statusCode == 401) {
-      if (kDebugMode) {
-        print(
-          '🔒 [TokenInterceptor] Detected 401 Error. Checking refresh token...',
-        );
-      }
+      AppLogger.debug(
+        '🔒 Detected 401 Error. Checking refresh token...',
+        tag: 'TokenInterceptor',
+      );
 
       final refreshToken = await _storageService.getRefreshToken();
 
@@ -52,9 +51,7 @@ class TokenInterceptor extends QueuedInterceptor {
         );
 
         // Gọi API Refresh (Hardcode path '/auth/refresh' vì đây là logic cốt lõi của Auth)
-        if (kDebugMode) {
-          print('🔄 [TokenInterceptor] Refreshing token...');
-        }
+        AppLogger.debug('🔄 Refreshing token...', tag: 'TokenInterceptor');
 
         final response = await refreshDio.post(
           '/auth/refresh',
@@ -75,11 +72,10 @@ class TokenInterceptor extends QueuedInterceptor {
             await _storageService.saveRefreshToken(newRefreshToken);
           }
 
-          if (kDebugMode) {
-            print(
-              '✅ [TokenInterceptor] Refresh Success! Retrying original request...',
-            );
-          }
+          AppLogger.debug(
+            '✅ Refresh Success! Retrying original request...',
+            tag: 'TokenInterceptor',
+          );
 
           // 5. Retry lại request gốc với token mới
           final opts = err.requestOptions;
@@ -96,9 +92,7 @@ class TokenInterceptor extends QueuedInterceptor {
         }
       } catch (e) {
         // Lỗi khi gọi API refresh (mất mạng, server die...)
-        if (kDebugMode) {
-          print('❌ [TokenInterceptor] Refresh Failed: $e');
-        }
+        AppLogger.error('❌ Refresh Failed', tag: 'TokenInterceptor', error: e);
         _notifySessionExpired();
         return handler.next(err);
       }

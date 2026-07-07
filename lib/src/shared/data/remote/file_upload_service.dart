@@ -3,12 +3,12 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as path;
 
 // 1. Đảm bảo import đúng Env và DioClient của bạn
 import 'package:reqres_in/src/core/env/env.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 
 @lazySingleton // Đăng ký với GetIt/Injectable
 class FileUploadService {
@@ -47,11 +47,10 @@ class FileUploadService {
         final chunkStream = file.openRead(start, end);
         final chunkSize = end - start;
 
-        if (kDebugMode) {
-          print(
-            '[FileUploadService] Uploading chunk ${i + 1}/$totalChunks: size=$chunkSize',
-          );
-        }
+        AppLogger.debug(
+          'Uploading chunk ${i + 1}/$totalChunks: size=$chunkSize',
+          tag: 'FileUploadService',
+        );
 
         // Tạo FormData cho chunk
         final formData = FormData.fromMap({
@@ -70,11 +69,10 @@ class FileUploadService {
           _uploadUrl, // Dùng URL tuyệt đối
           data: formData,
           onSendProgress: (sent, total) {
-            if (kDebugMode) {
-              print(
-                'Chunk ${i + 1} progress: ${(sent / total * 100).toStringAsFixed(0)}%',
-              );
-            }
+            AppLogger.debug(
+              'Chunk ${i + 1} progress: ${(sent / total * 100).toStringAsFixed(0)}%',
+              tag: 'FileUploadService',
+            );
           },
         );
 
@@ -84,9 +82,10 @@ class FileUploadService {
       }
 
       // --- 2. Gọi API hoàn tất upload ---
-      if (kDebugMode) {
-        print('[FileUploadService] All chunks uploaded. Completing upload...');
-      }
+      AppLogger.debug(
+        'All chunks uploaded. Completing upload...',
+        tag: 'FileUploadService',
+      );
 
       final completeFormData = FormData.fromMap({
         'fileName': fileName,
@@ -118,15 +117,19 @@ class FileUploadService {
       return '$_fileServerBaseUrl$relativePath';
     } catch (e) {
       // Bắt lỗi (ErrorInterceptor của bạn cũng sẽ chạy và log)
-      if (kDebugMode) {
-        if (e is DioException) {
-          // e.error chứa Failure nếu ErrorInterceptor bắt được
-          print(
-            '[FileUploadService] Dio Upload error: ${e.error ?? e.message}',
-          );
-        } else {
-          print('[FileUploadService] Generic Upload error: $e');
-        }
+      if (e is DioException) {
+        // e.error chứa Failure nếu ErrorInterceptor bắt được
+        AppLogger.error(
+          'Dio Upload error: ${e.error ?? e.message}',
+          tag: 'FileUploadService',
+          error: e,
+        );
+      } else {
+        AppLogger.error(
+          'Generic Upload error: $e',
+          tag: 'FileUploadService',
+          error: e,
+        );
       }
       return null; // Trả về null nếu có lỗi
     }
