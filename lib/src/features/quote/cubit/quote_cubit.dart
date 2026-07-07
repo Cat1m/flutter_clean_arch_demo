@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/quote/models/quote_model.dart';
 import 'package:reqres_in/src/features/quote/repositories/quote_repository.dart';
 
@@ -18,8 +19,9 @@ class QuoteCubit extends Cubit<QuoteState> {
     final result = await _quoteRepository.getRandomQuote();
 
     result.fold(
-      (failure) => emit(QuoteError(failure.message)),
-      (quote) => emit(QuoteSuccess(quote)),
+      (failure) => emit(QuoteFailure(failure)),
+      (quote) =>
+          emit(quote.quote.trim().isEmpty ? QuoteEmpty() : QuoteSuccess(quote)),
     );
   }
 }

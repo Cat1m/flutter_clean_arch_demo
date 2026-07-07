@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/user/models/user_model.dart';
 
 // 1. Dùng 'sealed class' làm lớp cơ sở
@@ -29,12 +30,13 @@ final class UserSuccess extends UserState {
   List<Object> get props => [user];
 }
 
-/// Trạng thái tải thất bại, chứa thông báo lỗi
+/// Trạng thái tải thất bại, chứa Failure gốc (để UI có thể hiển thị
+/// message/icon/retry action nhất quán qua FailureExtension)
 final class UserFailure extends UserState {
-  final String message;
+  final Failure failure;
 
-  const UserFailure(this.message);
+  const UserFailure(this.failure);
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [failure];
 }

@@ -17,9 +17,12 @@ final class QuoteSuccess extends QuoteState {
   List<Object> get props => [quote];
 }
 
-final class QuoteError extends QuoteState {
-  final String message;
-  const QuoteError(this.message);
+/// Trạng thái tải thành công nhưng nội dung quote trống.
+final class QuoteEmpty extends QuoteState {}
+
+final class QuoteFailure extends QuoteState {
+  final Failure failure;
+  const QuoteFailure(this.failure);
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [failure];
 }

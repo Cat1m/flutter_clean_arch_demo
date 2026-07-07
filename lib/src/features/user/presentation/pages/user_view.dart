@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_cubit.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_state.dart';
@@ -29,7 +33,10 @@ class UserView extends StatelessWidget {
               UserInitial() => const Center(child: CircularProgressIndicator()),
 
               // Case 2: Tải thất bại
-              UserFailure(message: final msg) => _buildErrorView(msg),
+              UserFailure(failure: final failure) => _buildErrorView(
+                context,
+                failure,
+              ),
               // Case 3: Tải thành công
               UserSuccess(user: final user) => _buildSuccessView(context, user),
             };
@@ -199,7 +206,7 @@ class UserView extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorView(String msg) {
+  Widget _buildErrorView(BuildContext context, Failure failure) {
     // 🚨 LƯU Ý QUAN TRỌNG:
     // Để RefreshIndicator hoạt động, child của nó PHẢI
     // là một widget có thể cuộn (scrollable).
@@ -208,15 +215,9 @@ class UserView extends StatelessWidget {
       // Thêm 'physics' để nó luôn cuộn được
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: Text(
-              'Lỗi: $msg',
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-          ),
+        AppErrorView(
+          failure: failure,
+          onRetry: () => unawaited(context.read<UserCubit>().fetchUser()),
         ),
       ],
     );

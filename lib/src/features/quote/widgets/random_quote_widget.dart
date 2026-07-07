@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/quote/cubit/quote_cubit.dart';
 
 class RandomQuoteWidget extends StatelessWidget {
@@ -50,16 +53,18 @@ class RandomQuoteWidget extends StatelessWidget {
           ),
 
           // 3. Bị lỗi
-          QuoteError() => Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Tải quote thất bại: ${state.message}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+          QuoteFailure(failure: final failure) => AppErrorView(
+            failure: failure,
+            onRetry: () =>
+                unawaited(context.read<QuoteCubit>().fetchRandomQuote()),
           ),
 
-          // 4. Trạng thái ban đầu (hoặc không hiển thị gì)
+          // 4. Tải thành công nhưng nội dung trống
+          QuoteEmpty() => const AppEmptyView(
+            message: 'Không có quote nào để hiển thị',
+          ),
+
+          // 5. Trạng thái ban đầu (hoặc không hiển thị gì)
           QuoteInitial() => const SizedBox.shrink(),
         };
       },

@@ -27,6 +27,19 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
+  void _submitLogin() {
+    context.hideKeyboard();
+    if (_formKey.currentState!.validate()) {
+      unawaited(
+        context.read<LoginCubit>().login(
+          _usernameController.text,
+          _passwordController.text,
+          _rememberMe,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
                   onPressed: () {
                     if (state.failure.shouldRetry) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      // Logic retry
+                      _submitLogin();
                     }
                   },
                 ),
@@ -148,21 +161,7 @@ class _LoginViewState extends State<LoginView> {
             AppButton(
               text: 'ĐĂNG NHẬP',
               isLoading: isLoading,
-              onPressed: () {
-                context.hideKeyboard();
-                if (_formKey.currentState!.validate()) {
-                  context.hideKeyboard();
-                  if (_formKey.currentState!.validate()) {
-                    unawaited(
-                      context.read<LoginCubit>().login(
-                        _usernameController.text,
-                        _passwordController.text,
-                        _rememberMe,
-                      ),
-                    );
-                  }
-                }
-              },
+              onPressed: _submitLogin,
             ),
 
             TextButton(

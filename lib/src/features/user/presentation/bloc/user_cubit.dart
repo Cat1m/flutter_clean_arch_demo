@@ -24,7 +24,7 @@ class UserCubit extends Cubit<UserState> {
     result.fold(
       (failure) {
         // 6a. Nếu thất bại (Left), phát ra UserFailure
-        emit(UserFailure(failure.message));
+        emit(UserFailure(failure));
       },
       (user) {
         // 6b. Nếu thành công (Right), phát ra UserSuccess
