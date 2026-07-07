@@ -1,6 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../infrastructure/pdf_font_helper.dart';
+import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 
 class PdfTextStyles {
   PdfTextStyles._();

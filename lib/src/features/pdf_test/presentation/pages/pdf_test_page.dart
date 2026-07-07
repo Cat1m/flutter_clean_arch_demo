@@ -49,6 +49,7 @@ class _PdfTestPageState extends State<PdfTestPage> {
     switch (result) {
       case PdfSuccess(:final file):
         // ✅ Thành công: Mở trang Beautiful View với file vừa tạo
+        if (!context.mounted) return;
         unawaited(
           Navigator.push(
             context,
@@ -64,6 +65,7 @@ class _PdfTestPageState extends State<PdfTestPage> {
 
       case PdfFailure(:final message):
         // ❌ Thất bại: Báo lỗi
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi tạo PDF: $message'),

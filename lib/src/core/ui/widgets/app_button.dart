@@ -1,7 +1,7 @@
 // lib/core/ui/widgets/app_button.dart
 
 import 'package:flutter/material.dart';
-import '../ui.dart'; // Import Core UI
+import 'package:reqres_in/src/core/ui/ui.dart'; // Import Core UI
 
 class AppButton extends StatelessWidget {
   final String text;

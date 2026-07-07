@@ -1,5 +1,7 @@
 // lib/src/core/navigation/router_module.dart
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -92,7 +94,7 @@ abstract class RouterModule {
                     child: const Text('Đăng xuất'),
                     onPressed: () {
                       context.pop();
-                      loginCubit.logout();
+                      unawaited(loginCubit.logout());
                     },
                   ),
                 ],

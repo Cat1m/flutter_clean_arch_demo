@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reqres_in/src/core/di/injection.dart';
@@ -11,7 +13,11 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       // 1. Dùng getIt để tạo một instance UserCubit mới
-      create: (context) => getIt<UserCubit>()..fetchUser(),
+      create: (context) {
+        final cubit = getIt<UserCubit>();
+        unawaited(cubit.fetchUser());
+        return cubit;
+      },
       // 2. Widget con là UserView
       child: const UserView(),
     );

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'error_event.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
 
 /// State của [ErrorCubit].
 ///

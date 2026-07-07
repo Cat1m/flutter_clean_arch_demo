@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import 'package:reqres_in/src/features/user/presentation/bloc/user_state.dart';
 import 'package:reqres_in/src/features/user/repository/user_repository.dart';
-import 'user_state.dart';
 
 // Đăng ký với GetIt/Injectable
 @injectable

@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reqres_in/src/core/ui/ui.dart';
+import 'package:reqres_in/src/features/auth/presentation/bloc/auth_state.dart';
+import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
 import 'package:reqres_in/src/shared/extensions/failure_extension.dart';
-import '../bloc/auth_state.dart';
-import '../bloc/login_cubit.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -151,10 +153,12 @@ class _LoginViewState extends State<LoginView> {
                 if (_formKey.currentState!.validate()) {
                   context.hideKeyboard();
                   if (_formKey.currentState!.validate()) {
-                    context.read<LoginCubit>().login(
-                      _usernameController.text,
-                      _passwordController.text,
-                      _rememberMe,
+                    unawaited(
+                      context.read<LoginCubit>().login(
+                        _usernameController.text,
+                        _passwordController.text,
+                        _rememberMe,
+                      ),
                     );
                   }
                 }
@@ -166,10 +170,12 @@ class _LoginViewState extends State<LoginView> {
                   ? null
                   : () {
                       context.hideKeyboard();
-                      context.read<LoginCubit>().login(
-                        'eve.holt@reqres.in',
-                        '',
-                        false,
+                      unawaited(
+                        context.read<LoginCubit>().login(
+                          'eve.holt@reqres.in',
+                          '',
+                          false,
+                        ),
                       );
                     },
               child: const Text('Test Đăng nhập lỗi'),

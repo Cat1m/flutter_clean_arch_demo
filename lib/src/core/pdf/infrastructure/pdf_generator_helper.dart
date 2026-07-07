@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
-import '../domain/pdf_config_model.dart';
-import 'pdf_font_helper.dart';
+import 'package:reqres_in/src/core/pdf/domain/pdf_config_model.dart';
+import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 
 /// Helper chuyên biệt để tạo cấu trúc Document chuẩn
 class PdfGeneratorHelper {

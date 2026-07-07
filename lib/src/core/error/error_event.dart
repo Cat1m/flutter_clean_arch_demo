@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../network/failures.dart';
-import 'error_severity.dart';
+import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 
 /// Event chứa thông tin error được emit lên Error Bus.
 ///

@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:reqres_in/src/core/auth/auth_type.dart';
-import 'package:retrofit/retrofit.dart';
-
 // Import Model nội bộ của Feature Auth (Đúng nguyên tắc)
-import '../../models/auth_models.dart';
+import 'package:reqres_in/src/features/auth/models/auth_models.dart';
+import 'package:retrofit/retrofit.dart';
 
 part 'auth_client.g.dart';
 

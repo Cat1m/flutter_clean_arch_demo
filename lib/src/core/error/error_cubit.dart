@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
-import 'error_event.dart';
-import 'error_event_service.dart';
-import 'error_state.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
+import 'package:reqres_in/src/core/error/error_state.dart';
 
 /// Singleton cubit quản lý error state toàn app.
 ///
@@ -58,8 +58,8 @@ class ErrorCubit extends Cubit<ErrorState> {
   void dismiss() => emit(const ErrorIdle());
 
   @override
-  Future<void> close() {
-    _subscription.cancel();
+  Future<void> close() async {
+    await _subscription.cancel();
     return super.close();
   }
 }

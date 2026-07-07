@@ -40,7 +40,7 @@ class NetworkService {
 
   NetworkService() {
     // Kiểm tra trạng thái thực tế ngay lập tức
-    _connectivity.checkConnectivity().then(_updateFromConnectivity);
+    unawaited(_connectivity.checkConnectivity().then(_updateFromConnectivity));
 
     // Lắng nghe các thay đổi transport trong tương lai
     _connectivitySub = _connectivity.onConnectivityChanged.listen(
@@ -85,7 +85,7 @@ class NetworkService {
 
   @disposeMethod
   void dispose() {
-    _connectivitySub.cancel();
-    _networkSubject.close();
+    unawaited(_connectivitySub.cancel());
+    unawaited(_networkSubject.close());
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -35,9 +37,9 @@ class ThemeCubit extends Cubit<ThemeMode> {
   /// Helper để toggle nhanh giữa Light/Dark (bỏ qua System)
   void toggleTheme() {
     if (state == ThemeMode.dark) {
-      setTheme(ThemeMode.light);
+      unawaited(setTheme(ThemeMode.light));
     } else {
-      setTheme(ThemeMode.dark);
+      unawaited(setTheme(ThemeMode.dark));
     }
   }
 }

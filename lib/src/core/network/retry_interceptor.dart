@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import 'network_service.dart';
+import 'package:reqres_in/src/core/network/network_service.dart';
 
 class RetryInterceptor extends Interceptor {
   final Dio dio; // Dùng chính Dio gốc để retry qua cùng interceptor chain

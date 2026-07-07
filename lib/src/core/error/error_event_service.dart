@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 
-import 'error_event.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
 
 /// Singleton stream broadcast bus cho error events toàn app.
 ///
@@ -25,6 +25,6 @@ class ErrorEventService {
 
   @disposeMethod
   void dispose() {
-    _controller.close();
+    unawaited(_controller.close());
   }
 }

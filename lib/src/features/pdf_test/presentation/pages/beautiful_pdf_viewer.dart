@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart'; // Cần thiết để dùng SchedulerBinding (đợi frame)
@@ -29,10 +30,12 @@ class _BeautifulPdfViewerState extends State<BeautifulPdfViewer> {
   bool _isShowPdf = true;
 
   void _shareFile() {
-    // ignore: deprecated_member_use
-    Share.shareXFiles([
-      XFile(widget.pdfFile.path),
-    ], text: 'Gửi bạn file CV từ ứng dụng Flutter');
+    unawaited(
+      // ignore: deprecated_member_use
+      Share.shareXFiles([
+        XFile(widget.pdfFile.path),
+      ], text: 'Gửi bạn file CV từ ứng dụng Flutter'),
+    );
   }
 
   // ✅ 2. Hàm xử lý Back an toàn (Safe Back Logic)

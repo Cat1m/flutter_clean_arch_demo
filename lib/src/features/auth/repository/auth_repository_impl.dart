@@ -4,10 +4,9 @@ import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/core/storage/secure_storage_service.dart';
 import 'package:reqres_in/src/core/storage/settings_service.dart';
+import 'package:reqres_in/src/features/auth/models/auth_models.dart';
+import 'package:reqres_in/src/features/auth/repository/auth_repository.dart';
 import 'package:reqres_in/src/shared/data/remote/api_service.dart';
-
-import '../models/auth_models.dart';
-import 'auth_repository.dart';
 
 @LazySingleton(as: AuthRepository)
 class AuthRepositoryImpl implements AuthRepository {

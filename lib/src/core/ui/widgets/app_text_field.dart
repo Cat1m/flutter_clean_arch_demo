@@ -1,7 +1,7 @@
 // lib/core/ui/widgets/app_text_field.dart
 
 import 'package:flutter/material.dart';
-import '../ui.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 
 class AppTextField extends StatefulWidget {
   final TextEditingController? controller;

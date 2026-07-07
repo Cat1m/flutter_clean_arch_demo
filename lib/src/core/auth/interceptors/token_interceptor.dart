@@ -63,8 +63,9 @@ class TokenInterceptor extends QueuedInterceptor {
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // 3. Parse kết quả
-          final newAccessToken = response.data['accessToken'];
-          final newRefreshToken = response.data['refreshToken'];
+          final responseData = response.data as Map<String, dynamic>;
+          final newAccessToken = responseData['accessToken'] as String?;
+          final newRefreshToken = responseData['refreshToken'] as String?;
 
           // 4. Lưu lại vào Storage
           if (newAccessToken != null) {

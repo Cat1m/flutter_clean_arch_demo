@@ -1,6 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'pdf_text_styles.dart';
+import 'package:reqres_in/src/core/pdf/presentation/pdf_text_styles.dart';
 
 class PdfComponents {
   PdfComponents._();

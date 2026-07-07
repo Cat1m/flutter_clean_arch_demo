@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:reqres_in/src/core/auth/auth_type.dart';
+import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:retrofit/retrofit.dart';
-import '../../models/user_model.dart';
 
 part 'user_client.g.dart';
 

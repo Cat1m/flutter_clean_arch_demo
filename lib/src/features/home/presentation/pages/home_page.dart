@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reqres_in/src/core/di/injection.dart';
@@ -15,8 +17,11 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 2. Cung cấp Cubit cho cây widget
     return BlocProvider(
-      create: (context) =>
-          getIt<QuoteCubit>()..fetchRandomQuote(), // Lấy từ DI và gọi hàm fetch
+      create: (context) {
+        final cubit = getIt<QuoteCubit>();
+        unawaited(cubit.fetchRandomQuote()); // Lấy từ DI và gọi hàm fetch
+        return cubit;
+      },
       child: HomeView(userData: userData), // 3. Trả về "View" (dumb widget)
     );
   }

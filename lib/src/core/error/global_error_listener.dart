@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../navigation/router_module.dart';
-import '../network/failures.dart';
-import 'error_cubit.dart';
-import 'error_severity.dart';
-import 'error_state.dart';
+import 'package:reqres_in/src/core/error/error_cubit.dart';
+import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/error/error_state.dart';
+import 'package:reqres_in/src/core/navigation/router_module.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 
 /// Widget bọc child trong [BlocListener<ErrorCubit>].
 ///
@@ -99,21 +101,23 @@ class GlobalErrorListener extends StatelessWidget {
 
   /// Dialog cần [navContext] — context bên dưới Navigator.
   void _showDialog(BuildContext navContext, Failure failure) {
-    showDialog<void>(
-      context: navContext,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Lỗi hệ thống'),
-          content: Text(failure.message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Đã hiểu'),
-            ),
-          ],
-        );
-      },
+    unawaited(
+      showDialog<void>(
+        context: navContext,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Lỗi hệ thống'),
+            content: Text(failure.message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Đã hiểu'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 

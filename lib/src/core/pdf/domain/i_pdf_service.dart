@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'pdf_config_model.dart';
+import 'package:reqres_in/src/core/pdf/domain/pdf_config_model.dart';
 
 // Định nghĩa các trạng thái trả về khi xuất PDF
 sealed class PdfResult {}

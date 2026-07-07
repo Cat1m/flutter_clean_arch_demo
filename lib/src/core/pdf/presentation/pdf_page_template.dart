@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import '../domain/pdf_config_model.dart';
-import '../infrastructure/pdf_generator_helper.dart';
-import 'pdf_text_styles.dart';
+import 'package:reqres_in/src/core/pdf/domain/pdf_config_model.dart';
+import 'package:reqres_in/src/core/pdf/infrastructure/pdf_generator_helper.dart';
+import 'package:reqres_in/src/core/pdf/presentation/pdf_text_styles.dart';
 
 class PdfPageTemplate {
   /// Hàm build chính, gọi đến Helper ở tầng Infrastructure

@@ -6,8 +6,8 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 
-import '../error/error_event_service.dart';
-import 'network.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
+import 'package:reqres_in/src/core/network/network.dart';
 
 class DioClient {
   // ✅ Dùng late final để đảm bảo chỉ khởi tạo 1 lần duy nhất

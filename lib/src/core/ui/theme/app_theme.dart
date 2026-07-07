@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-import 'app_dimens.dart';
-import 'app_text_styles.dart';
+import 'package:reqres_in/src/core/ui/theme/app_colors.dart';
+import 'package:reqres_in/src/core/ui/theme/app_dimens.dart';
+import 'package:reqres_in/src/core/ui/theme/app_text_styles.dart';
 
 class AppTheme {
   // 1. Light Theme

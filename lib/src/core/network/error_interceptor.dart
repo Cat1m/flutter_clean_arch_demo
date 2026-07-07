@@ -6,10 +6,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../error/error_event.dart';
-import '../error/error_event_service.dart';
-import '../error/error_severity.dart';
-import 'network.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
+import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/network/network.dart';
 
 class ErrorInterceptor extends Interceptor {
   // Config keys

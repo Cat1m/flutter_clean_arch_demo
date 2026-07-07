@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
@@ -36,7 +38,7 @@ class SessionExpiredPage extends StatelessWidget {
                   // Cubit sẽ emit AuthInitial, và GoRouter
                   // (đang lắng nghe) sẽ tự động điều hướng
                   // app về route '/login'.
-                  context.read<LoginCubit>().logout();
+                  unawaited(context.read<LoginCubit>().logout());
                 },
               ),
             ],

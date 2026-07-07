@@ -6,8 +6,8 @@ import 'package:reqres_in/src/core/error/error_event.dart';
 import 'package:reqres_in/src/core/error/error_event_service.dart';
 import 'package:reqres_in/src/core/error/error_severity.dart';
 import 'package:reqres_in/src/core/network/failures.dart' as network;
-import '../../repository/auth_repository.dart';
-import 'auth_state.dart';
+import 'package:reqres_in/src/features/auth/presentation/bloc/auth_state.dart';
+import 'package:reqres_in/src/features/auth/repository/auth_repository.dart';
 
 @singleton
 class LoginCubit extends Cubit<AuthState> {
@@ -63,8 +63,8 @@ class LoginCubit extends Cubit<AuthState> {
   }
 
   @override
-  Future<void> close() {
-    _errorSubscription?.cancel();
+  Future<void> close() async {
+    await _errorSubscription?.cancel();
     return super.close();
   }
 }

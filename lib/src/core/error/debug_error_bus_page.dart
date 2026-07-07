@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../di/injection.dart';
-import '../network/failures.dart';
-import 'error_event.dart';
-import 'error_event_service.dart';
-import 'error_severity.dart';
+import 'package:reqres_in/src/core/di/injection.dart';
+import 'package:reqres_in/src/core/error/error_event.dart';
+import 'package:reqres_in/src/core/error/error_event_service.dart';
+import 'package:reqres_in/src/core/error/error_severity.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 
 /// Trang debug để test Error Bus module.
 ///

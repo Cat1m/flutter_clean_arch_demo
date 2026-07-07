@@ -28,61 +28,59 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  flutter:
-    sdk: flutter
-
+  another_flushbar: ^1.12.32
+  connectivity_plus: ^7.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  dartz: ^0.10.1
+  dio: ^5.9.0
+  envied: ^1.3.1
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_rust_bridge: 2.11.1
+  flutter_secure_storage: ^9.2.4
+  freezed_annotation: ^3.1.0
+  get_it: ^8.3.0
+  go_router: ^17.0.0
+  google_fonts: ^6.3.2
+  http: ^1.6.0
+  injectable: ^2.5.2
+  json_annotation: ^4.9.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  pdf: ^3.11.3
+  pretty_dio_logger: ^1.4.0
+  printing: ^5.14.2
+  retrofit: ^4.9.0
   rust_lib_reqres_in:
     path: rust_builder
-  flutter_rust_bridge: 2.11.1
-  flutter_bloc: ^9.1.1
-  dio: ^5.9.0
-  retrofit: ^4.9.0
-  freezed_annotation: ^3.1.0
-  json_annotation: ^4.9.0
-  dartz: ^0.10.1
-  equatable: ^2.0.7
-  get_it: ^8.3.0
-  injectable: ^2.5.2
-  envied: ^1.3.1
-  flutter_secure_storage: ^9.2.4
-  pretty_dio_logger: ^1.4.0
-  shared_preferences: ^2.5.3
-  path: ^1.9.1
-  go_router: ^17.0.0
-  connectivity_plus: ^7.0.0
   rxdart: ^0.28.0
-  another_flushbar: ^1.12.32
-  google_fonts: ^6.3.2
-  pdf: ^3.11.3
-  printing: ^5.14.2
-  path_provider: ^2.1.5
-  syncfusion_flutter_pdfviewer: ^32.1.22
   share_plus: ^12.0.1
-  http: ^1.6.0
+  shared_preferences: ^2.5.3
+  syncfusion_flutter_pdfviewer: ^32.1.22
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
   bloc_test: ^10.0.0
-  mocktail: ^1.0.4
-
+  build_runner: ^2.10.1 #flutter pub run build_runner build --delete-conflicting-outputs
+  envied_generator: ^1.3.1
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  freezed: ^3.2.3
+  injectable_generator: ^2.9.0
   integration_test:
     sdk: flutter
-  retrofit_generator: ^10.1.2
-  build_runner: ^2.10.1 #flutter pub run build_runner build --delete-conflicting-outputs
-  freezed: ^3.2.3
   json_serializable: ^6.11.1
-  injectable_generator: ^2.9.0
-  envied_generator: ^1.3.1
+  mocktail: ^1.0.4
+  retrofit_generator: ^10.1.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -6,8 +6,8 @@ import 'dart:developer' as dev;
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
-import 'cache_store.dart';
-import 'failures.dart';
+import 'package:reqres_in/src/core/network/cache_store.dart';
+import 'package:reqres_in/src/core/network/failures.dart';
 
 /// Mixin cung cấp các method helper cho repository layer.
 ///

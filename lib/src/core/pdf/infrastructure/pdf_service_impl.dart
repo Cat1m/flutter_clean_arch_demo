@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
-import '../domain/i_pdf_service.dart';
-import '../domain/pdf_config_model.dart';
+import 'package:reqres_in/src/core/pdf/domain/i_pdf_service.dart';
+import 'package:reqres_in/src/core/pdf/domain/pdf_config_model.dart';
 
 @LazySingleton(as: IPdfService)
 class PdfServiceImpl implements IPdfService {
