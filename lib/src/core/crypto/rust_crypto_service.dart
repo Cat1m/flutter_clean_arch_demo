@@ -13,7 +13,9 @@ class _CryptoStorageKeys {
 /// trong secure storage của hệ điều hành.
 @lazySingleton
 class RustCryptoService {
-  final _storage = const FlutterSecureStorage();
+  final _storage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(resetOnError: true),
+  );
   String? _cachedKey;
 
   Future<String> _getOrCreateKey() async {

@@ -19,11 +19,11 @@ class SecureStorageService {
   SecureStorageService(this._cryptoService);
 
   // Tạo một instance singleton cho FlutterSecureStorage
+  // resetOnError: true — nếu Keystore key của Android bị thu hồi (đổi khoá
+  // màn hình, restore backup, ROM update...) khiến mọi read/write lỗi
+  // BadPaddingException, plugin tự deleteAll() + tạo lại key thay vì crash.
   final _storage = const FlutterSecureStorage(
-    // Tùy chọn: Thêm các tùy chọn bảo mật cho Android
-    // aOptions: AndroidOptions(
-    //   encryptedSharedPreferences: true,
-    // ),
+    aOptions: AndroidOptions(resetOnError: true),
   );
 
   // Mã hoá thêm 1 lớp AES-256-GCM (native, viết bằng Rust) trước khi lưu,
