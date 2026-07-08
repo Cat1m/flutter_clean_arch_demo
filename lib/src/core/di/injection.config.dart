@@ -29,6 +29,7 @@ import '../../shared/data/remote/file_upload_service.dart' as _i931;
 import '../../shared/theme/theme_cubit.dart' as _i0;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
+import '../crypto/rust_crypto_service.dart' as _i763;
 import '../error/error_cubit.dart' as _i538;
 import '../error/error_event_service.dart' as _i860;
 import '../navigation/router_module.dart' as _i358;
@@ -52,6 +53,7 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     final routerModule = _$RouterModule();
     gh.singleton<_i589.PdfFontHelper>(() => registerModule.pdfFontHelper);
+    gh.lazySingleton<_i763.RustCryptoService>(() => _i763.RustCryptoService());
     await gh.lazySingletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,
       preResolve: true,
@@ -65,17 +67,11 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i1025.NetworkService(),
       dispose: (i) => i.dispose(),
     );
-    gh.lazySingleton<_i666.SecureStorageService>(
-      () => _i666.SecureStorageService(),
-    );
-    gh.lazySingleton<_i823.TokenInterceptor>(
-      () => _i823.TokenInterceptor(
-        gh<_i666.SecureStorageService>(),
-        gh<_i860.ErrorEventService>(),
-      ),
-    );
     gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
     gh.lazySingleton<_i705.CacheStore>(() => _i705.InMemoryCacheStore());
+    gh.lazySingleton<_i666.SecureStorageService>(
+      () => _i666.SecureStorageService(gh<_i763.RustCryptoService>()),
+    );
     gh.lazySingleton<_i705.CacheStore>(
       () => _i705.SharedPrefsCacheStore(gh<_i460.SharedPreferences>()),
       instanceName: 'persistent',
@@ -91,6 +87,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i164.AuthInterceptor>(
       () => _i164.AuthInterceptor(gh<_i666.SecureStorageService>()),
+    );
+    gh.lazySingleton<_i823.TokenInterceptor>(
+      () => _i823.TokenInterceptor(
+        gh<_i666.SecureStorageService>(),
+        gh<_i860.ErrorEventService>(),
+      ),
     );
     gh.lazySingleton<_i667.DioClient>(
       () => registerModule.dioClient(

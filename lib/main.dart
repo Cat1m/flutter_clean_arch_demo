@@ -12,10 +12,15 @@ import 'package:reqres_in/src/core/ui/ui.dart';
 
 // ✅ Gom nhóm import Feature
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
+import 'package:reqres_in/src/rust/frb_generated.dart';
 import 'package:reqres_in/src/shared/theme/theme_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 0. Khởi tạo Rust bridge (bắt buộc trước khi gọi bất kỳ hàm Rust nào,
+  // ví dụ RustCryptoService dùng để mã hoá dữ liệu trong SecureStorageService).
+  await RustLib.init();
 
   // 1. Cấu hình DI (Blocking - Bắt buộc chờ vì các màn hình sau cần nó)
   await configureDependencies();
