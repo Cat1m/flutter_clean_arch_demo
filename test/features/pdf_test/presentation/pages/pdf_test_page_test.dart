@@ -8,7 +8,7 @@ void main() {
     (tester) async {
       await tester.pumpWidget(const MaterialApp(home: PdfTestPage()));
 
-      expect(find.text('Tạo CV mẫu'), findsOneWidget);
+      expect(find.text('Xuất CV PDF'), findsOneWidget);
       expect(find.text('Demo tính năng xuất PDF'), findsOneWidget);
       expect(find.text('Xem giao diện đẹp'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);

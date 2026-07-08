@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/auth_state.dart';
 import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
 import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
@@ -25,30 +26,29 @@ class SplashPage extends StatelessWidget {
         // (Bao gồm AuthLoading và các state ban đầu)
         // GoRouter sẽ redirect nếu state là Initial/Failure,
         // nhưng trong milli-giây chờ đợi đó, nó sẽ hiển thị UI này.
-        return const Scaffold(
-          // Bạn có thể dùng màu chính của app
-          backgroundColor: Color(0xFF0A4D68), // (Ví dụ: Màu xanh đậm)
+        // Dùng đúng màu primary của design system thay vì hex hardcode,
+        // để splash luôn khớp brand kể cả khi đổi palette.
+        return Scaffold(
+          backgroundColor: context.colors.primary,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Thêm logo hoặc icon của bạn ở đây
-                Icon(
+                const Icon(
                   Icons.verified_user_outlined,
-                  size: 120,
+                  size: AppDimens.icXL * 2.5,
                   color: Colors.white,
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: AppDimens.s24),
                 Text(
                   'Clean Arch Demo',
-                  style: TextStyle(
+                  style: context.text.h1.copyWith(
                     fontSize: 28,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 48),
-                CircularProgressIndicator(color: Colors.white),
+                const SizedBox(height: AppDimens.s48),
+                const CircularProgressIndicator(color: Colors.white),
               ],
             ),
           ),

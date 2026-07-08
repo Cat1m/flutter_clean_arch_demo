@@ -1,6 +1,7 @@
 // lib/core/ui/theme/app_text_styles.dart
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 @immutable
 class AppTextStyles extends ThemeExtension<AppTextStyles> {
@@ -22,14 +23,13 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
     required this.button,
   });
 
-  // Base Style (Ví dụ dùng Roboto)
-  // Sau này muốn đổi font cả app thì sửa đúng 1 dòng này là xong
-  static const _baseStyle = TextStyle(
-    fontFamily: 'Roboto',
+  // Base Style dùng google_fonts (tự tải/cache font, không cần khai báo
+  // asset trong pubspec.yaml). Sau này muốn đổi font cả app thì sửa
+  // đúng dòng GoogleFonts.roboto(...) này là xong.
+  static final _baseStyle = GoogleFonts.roboto(
     fontWeight: FontWeight.w400,
     height: 1.5, // Line height dễ đọc
-    leadingDistribution: TextLeadingDistribution.even,
-  );
+  ).copyWith(leadingDistribution: TextLeadingDistribution.even);
 
   factory AppTextStyles.main() {
     return AppTextStyles(
@@ -38,7 +38,9 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
       h3: _baseStyle.copyWith(fontSize: 20, fontWeight: FontWeight.w600),
       body1: _baseStyle.copyWith(fontSize: 16), // Normal text
       body2: _baseStyle.copyWith(fontSize: 14), // Small text
-      caption: _baseStyle.copyWith(fontSize: 12, color: Colors.grey),
+      // Không hardcode màu ở đây — để caller override bằng
+      // context.colors.textSecondary khi cần màu mờ, tránh vỡ dark mode.
+      caption: _baseStyle.copyWith(fontSize: 12),
       button: _baseStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }

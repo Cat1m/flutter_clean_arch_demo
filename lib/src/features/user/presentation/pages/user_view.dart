@@ -30,8 +30,7 @@ class UserView extends StatelessWidget {
             // Dùng switch expression (Dart 3)
             return switch (state) {
               // Case 1: Đang tải
-              UserLoading() ||
-              UserInitial() => const Center(child: CircularProgressIndicator()),
+              UserLoading() || UserInitial() => const AppSkeletonList(),
 
               // Case 2: Tải thất bại
               UserFailure(failure: final failure) => _buildErrorView(
@@ -51,7 +50,7 @@ class UserView extends StatelessWidget {
   Widget _buildSuccessView(BuildContext context, User user) {
     // Dùng ListView để có thể cuộn
     return ListView(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(AppDimens.s8),
       children: [
         _buildHeader(context, user), // Header (Ảnh, Tên)
         const SizedBox(height: 16),
@@ -67,25 +66,23 @@ class UserView extends StatelessWidget {
 
   // --- Các Widget con ---
   Widget _buildHeader(BuildContext context, User user) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            CircleAvatar(radius: 50, backgroundImage: NetworkImage(user.image)),
-            const SizedBox(height: 16),
-            Text(
-              '${user.firstName} ${user.lastName} (${user.maidenName})',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
+    return AppCard(
+      child: Column(
+        children: [
+          CircleAvatar(radius: 50, backgroundImage: NetworkImage(user.image)),
+          const SizedBox(height: AppDimens.s16),
+          Text(
+            '${user.firstName} ${user.lastName} (${user.maidenName})',
+            style: context.text.h3,
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            '@${user.username} - Role: ${user.role}',
+            style: context.text.body2.copyWith(
+              color: context.colors.textSecondary,
             ),
-            Text(
-              '@${user.username} - Role: ${user.role}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -240,7 +237,10 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        title,
+        style: context.text.body2.copyWith(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
         value,
         maxLines: isMultiline ? 5 : 2,

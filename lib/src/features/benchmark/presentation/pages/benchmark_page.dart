@@ -64,22 +64,33 @@ class _BenchmarkPageState extends State<BenchmarkPage> {
       appBar: AppBar(title: const Text('Benchmark: Dart vs Rust')),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppDimens.s24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.speed, size: 80, color: Colors.deepOrange),
-              const SizedBox(height: 20),
+              Icon(Icons.speed, size: AppDimens.icXL, color: context.colors.primary),
+              const SizedBox(height: AppDimens.s20),
               Text('So sánh tốc độ tính Fibonacci', style: context.text.h2),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppDimens.s8),
               Text(
                 'Đệ quy thuần, không nhớ đệm — Dart (isolate) vs Rust (native)',
-                style: context.text.caption.copyWith(color: Colors.grey),
+                style: context.text.caption.copyWith(
+                  color: context.colors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimens.s8),
+              const Wrap(
+                spacing: AppDimens.s4,
+                alignment: WrapAlignment.center,
+                children: [
+                  AppBadge(label: 'flutter_rust_bridge'),
+                  AppBadge(label: 'compute() isolate'),
+                ],
+              ),
+              const SizedBox(height: AppDimens.s16),
               _buildBuildModeNotice(context),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppDimens.s24),
               DropdownButton<int>(
                 value: _selectedN,
                 items: _nOptions
@@ -89,21 +100,16 @@ class _BenchmarkPageState extends State<BenchmarkPage> {
                     ? null
                     : (n) => setState(() => _selectedN = n ?? _selectedN),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppDimens.s24),
               _isRunning
                   ? const CircularProgressIndicator()
-                  : ElevatedButton.icon(
+                  : AppButton(
+                      text: 'Chạy Benchmark',
+                      icon: Icons.bolt,
+                      isExpanded: false,
                       onPressed: _runBenchmark,
-                      icon: const Icon(Icons.bolt),
-                      label: const Text('Chạy Benchmark'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 15,
-                        ),
-                      ),
                     ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppDimens.s32),
               if (_dartResult != null && _rustResult != null)
                 _buildResultCard(context),
             ],
@@ -122,31 +128,28 @@ class _BenchmarkPageState extends State<BenchmarkPage> {
     final speedup = rustMs == 0 ? 0 : dartMs / rustMs;
     final resultsMatch = dart.result == rust.result.toInt();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildResultRow('Dart', dartMs),
-            const SizedBox(height: 8),
-            _buildResultRow('Rust', rustMs),
-            const Divider(height: 24),
-            Text(
-              speedup >= 1
-                  ? '🚀 Rust nhanh hơn ${speedup.toStringAsFixed(1)}x'
-                  : 'Dart nhanh hơn ${(1 / speedup).toStringAsFixed(1)}x',
-              style: context.text.h3,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              resultsMatch
-                  ? '✅ Kết quả khớp: fib($_selectedN) = ${dart.result}'
-                  : '⚠️ Kết quả KHÔNG khớp: Dart=${dart.result}, Rust=${rust.result}',
-              style: context.text.caption,
-            ),
-          ],
-        ),
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildResultRow(context, 'Dart', dartMs),
+          const SizedBox(height: AppDimens.s8),
+          _buildResultRow(context, 'Rust', rustMs),
+          const Divider(height: AppDimens.s24),
+          Text(
+            speedup >= 1
+                ? '🚀 Rust nhanh hơn ${speedup.toStringAsFixed(1)}x'
+                : 'Dart nhanh hơn ${(1 / speedup).toStringAsFixed(1)}x',
+            style: context.text.h3,
+          ),
+          const SizedBox(height: AppDimens.s4),
+          Text(
+            resultsMatch
+                ? '✅ Kết quả khớp: fib($_selectedN) = ${dart.result}'
+                : '⚠️ Kết quả KHÔNG khớp: Dart=${dart.result}, Rust=${rust.result}',
+            style: context.text.caption,
+          ),
+        ],
       ),
     );
   }
@@ -159,13 +162,16 @@ class _BenchmarkPageState extends State<BenchmarkPage> {
         ? '✅ Đang chạy RELEASE — Rust đã được tối ưu hoá, số liệu phản ánh đúng hiệu năng thật.'
         : '⚠️ Đang chạy DEBUG — Rust build KHÔNG tối ưu, có thể CHẬM hơn Dart. '
               'Chạy "flutter run --release" để thấy Rust nhanh hơn đúng thực tế.';
-    final color = kReleaseMode ? Colors.green : Colors.orange;
+    final color = kReleaseMode ? context.colors.success : context.colors.warning;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.s12,
+        vertical: AppDimens.s8,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimens.r8),
         border: Border.all(color: color),
       ),
       child: Text(
@@ -176,11 +182,11 @@ class _BenchmarkPageState extends State<BenchmarkPage> {
     );
   }
 
-  Widget _buildResultRow(String label, double ms) {
+  Widget _buildResultRow(BuildContext context, String label, double ms) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label, style: context.text.body1.copyWith(fontWeight: FontWeight.bold)),
         Text('${ms.toStringAsFixed(2)} ms'),
       ],
     );

@@ -106,6 +106,50 @@ class AppTheme {
         backgroundColor: colors.primary,
         foregroundColor: colors.surface,
       ),
+
+      // 1. Checkbox & Radio (Tự động ăn theo màu Primary/Error)
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return colors.primary;
+          return null; // Mặc định
+        }),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.r4),
+        ),
+      ),
+
+      // 2. Card (Card mặc định trong app)
+      cardTheme: CardThemeData(
+        color: colors.surface,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.r12),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      // 3. Dialog & BottomSheet
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.r16),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimens.r16),
+          ),
+        ),
+      ),
+
+      // 4. Divider (Đường kẻ mờ)
+      dividerTheme: DividerThemeData(
+        color: colors.border,
+        thickness: 1,
+        space: 1,
+      ),
     );
   }
 }

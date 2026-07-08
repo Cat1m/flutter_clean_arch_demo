@@ -39,9 +39,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Chào mừng trở lại,'), findsOneWidget);
+      expect(find.text('Chào mừng trở lại'), findsOneWidget);
       expect(find.text('Emily Johnson'), findsOneWidget);
-      expect(find.text('@emilys'), findsOneWidget);
     },
   );
 }

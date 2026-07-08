@@ -1,7 +1,5 @@
 // lib/core/ui/theme/app_colors.dart
 
-// ignore_for_file: unused_field
-
 import 'package:flutter/material.dart';
 
 // 1. Palette: Bảng màu thô (Chỉ dùng nội bộ file này)
@@ -18,7 +16,6 @@ class _Palette {
 
   // Neutral Colors
   static const white = Color(0xFFFFFFFF);
-  static const black = Color(0xFF000000);
   static const gray100 = Color(0xFFF5F5F5);
   static const gray300 = Color(0xFFE0E0E0);
   static const gray800 = Color(0xFF424242);
@@ -36,6 +33,8 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color textSecondary;
   final Color error;
   final Color success;
+  final Color warning;
+  final Color info;
   final Color border; // Dùng cho viền ô input, card
 
   const AppColors({
@@ -47,6 +46,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.textSecondary,
     required this.error,
     required this.success,
+    required this.warning,
+    required this.info,
     required this.border,
   });
 
@@ -61,6 +62,8 @@ class AppColors extends ThemeExtension<AppColors> {
       textSecondary: _Palette.gray800,
       error: _Palette.error,
       success: _Palette.success,
+      warning: _Palette.warning,
+      info: _Palette.info,
       border: _Palette.gray300,
     );
   }
@@ -76,6 +79,8 @@ class AppColors extends ThemeExtension<AppColors> {
       textSecondary: _Palette.gray300,
       error: Color(0xFFCF6679), // Error màu nhạt hơn cho dễ đọc trên nền đen
       success: Color(0xFF81C784),
+      warning: Color(0xFFFFD54F),
+      info: Color(0xFF64B5F6),
       border: _Palette.gray800,
     );
   }
@@ -91,6 +96,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? textSecondary,
     Color? error,
     Color? success,
+    Color? warning,
+    Color? info,
     Color? border,
   }) {
     return AppColors(
@@ -102,6 +109,8 @@ class AppColors extends ThemeExtension<AppColors> {
       textSecondary: textSecondary ?? this.textSecondary,
       error: error ?? this.error,
       success: success ?? this.success,
+      warning: warning ?? this.warning,
+      info: info ?? this.info,
       border: border ?? this.border,
     );
   }
@@ -118,6 +127,8 @@ class AppColors extends ThemeExtension<AppColors> {
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       error: Color.lerp(error, other.error, t)!,
       success: Color.lerp(success, other.success, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      info: Color.lerp(info, other.info, t)!,
       border: Color.lerp(border, other.border, t)!,
     );
   }

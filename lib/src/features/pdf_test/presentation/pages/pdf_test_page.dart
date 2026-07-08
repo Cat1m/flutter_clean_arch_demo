@@ -69,7 +69,7 @@ class _PdfTestPageState extends State<PdfTestPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi tạo PDF: $message'),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.error,
           ),
         );
         break;
@@ -79,36 +79,51 @@ class _PdfTestPageState extends State<PdfTestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tạo CV mẫu')),
+      appBar: AppBar(title: const Text('Xuất CV PDF')),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.picture_as_pdf, size: 80, color: Colors.redAccent),
-            const SizedBox(height: 20),
-            Text('Demo tính năng xuất PDF', style: context.text.h2),
-            const SizedBox(height: 10),
-            Text(
-              'Giao diện đẹp (Syncfusion) & Share',
-              style: context.text.caption.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 40),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimens.s24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.picture_as_pdf,
+                size: AppDimens.icXL,
+                color: context.colors.primary,
+              ),
+              const SizedBox(height: AppDimens.s20),
+              Text('Demo tính năng xuất PDF', style: context.text.h2),
+              const SizedBox(height: AppDimens.s8),
+              Text(
+                'Tạo file CV bằng package pdf, xem trước bằng Syncfusion, chia sẻ qua share_plus',
+                textAlign: TextAlign.center,
+                style: context.text.caption.copyWith(
+                  color: context.colors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppDimens.s8),
+              const Wrap(
+                spacing: AppDimens.s4,
+                alignment: WrapAlignment.center,
+                children: [
+                  AppBadge(label: 'pdf'),
+                  AppBadge(label: 'Syncfusion'),
+                  AppBadge(label: 'share_plus'),
+                ],
+              ),
+              const SizedBox(height: AppDimens.s32),
 
-            // Nếu đang tạo file thì hiện loading, ngược lại hiện nút bấm
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton.icon(
-                    onPressed: () => _generateAndOpenBeautifulView(context),
-                    icon: const Icon(Icons.visibility),
-                    label: const Text('Xem giao diện đẹp'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
+              // Nếu đang tạo file thì hiện loading, ngược lại hiện nút bấm
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : AppButton(
+                      text: 'Xem giao diện đẹp',
+                      icon: Icons.visibility,
+                      isExpanded: false,
+                      onPressed: () => _generateAndOpenBeautifulView(context),
                     ),
-                  ),
-          ],
+            ],
+          ),
         ),
       ),
     );

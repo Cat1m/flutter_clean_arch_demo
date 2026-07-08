@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reqres_in/src/core/crypto/pin_lock_service.dart';
 import 'package:reqres_in/src/core/di/injection.dart';
 import 'package:reqres_in/src/core/logging/app_logger.dart';
+import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/user/presentation/widgets/pin_pad_dialog.dart';
 
 const _maxWrongPinAttempts = 5;
@@ -101,7 +102,10 @@ class _PinLockedWalletTileState extends State<PinLockedWalletTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: const Text('Ví', style: TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        'Ví',
+        style: context.text.body2.copyWith(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
         _isRevealed ? _revealedValue! : '•' * 12,
         maxLines: 2,
