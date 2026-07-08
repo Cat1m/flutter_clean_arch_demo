@@ -27,6 +27,8 @@ import '../../features/user/repository/user_repository_impl.dart' as _i57;
 import '../../shared/data/remote/api_service.dart' as _i1053;
 import '../../shared/data/remote/file_upload_service.dart' as _i931;
 import '../../shared/theme/theme_cubit.dart' as _i0;
+import '../ai/firebase_ai_translation_service.dart' as _i147;
+import '../ai/translation_service.dart' as _i816;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
 import '../crypto/pin_lock_service.dart' as _i1008;
@@ -70,6 +72,9 @@ extension GetItInjectableX on _i174.GetIt {
       dispose: (i) => i.dispose(),
     );
     gh.lazySingleton<_i979.IPdfService>(() => _i916.PdfServiceImpl());
+    gh.lazySingleton<_i816.TranslationService>(
+      () => _i147.FirebaseAiTranslationService(),
+    );
     gh.lazySingleton<_i705.CacheStore>(() => _i705.InMemoryCacheStore());
     gh.lazySingleton<_i666.SecureStorageService>(
       () => _i666.SecureStorageService(gh<_i763.RustCryptoService>()),
@@ -116,15 +121,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i931.FileUploadService>(
       () => _i931.FileUploadService(gh<_i361.Dio>()),
     );
+    gh.factory<_i422.QuoteCubit>(
+      () => _i422.QuoteCubit(
+        gh<_i48.QuoteRepository>(),
+        gh<_i816.TranslationService>(),
+      ),
+    );
     gh.lazySingleton<_i871.AuthRepository>(
       () => _i932.AuthRepositoryImpl(
         gh<_i1053.ApiService>(),
         gh<_i666.SecureStorageService>(),
         gh<_i112.SettingsService>(),
       ),
-    );
-    gh.factory<_i422.QuoteCubit>(
-      () => _i422.QuoteCubit(gh<_i48.QuoteRepository>()),
     );
     gh.lazySingleton<_i480.UserRepository>(
       () => _i57.UserRepositoryImpl(gh<_i1053.ApiService>()),

@@ -48,6 +48,7 @@ flutter_rust_bridge_codegen generate
 - **`storage/`** — `SecureStorageService` (tokens, encrypted via `RustCryptoService`) and `SettingsService` (SharedPreferences).
 - **`crypto/`** — `RustCryptoService` (AES-256-GCM at rest, backs `SecureStorageService`) and `PinLockService` (PIN + Argon2 key derivation). See `rust/README.md`.
 - **`pdf/`** — Standalone PDF module with domain/infrastructure/presentation layers. Uses `pdf` package for generation, Syncfusion for viewing.
+- **`ai/`** — `TranslationService` interface backed by Firebase AI Logic (`FirebaseAiTranslationService`, Gemini model). Requires Firebase project + App Check setup — see `lib/src/core/ai/README.md`.
 - **`ui/`** — App theme (light/dark), colors, text styles, dimensions, shared widgets.
 
 ## Key Patterns

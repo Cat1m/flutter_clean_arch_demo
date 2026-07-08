@@ -10,8 +10,6 @@ class RandomQuoteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     // Widget này sẽ lắng nghe QuoteCubit (được cung cấp ở HomePage)
     return BlocBuilder<QuoteCubit, QuoteState>(
       builder: (context, state) {
@@ -19,38 +17,13 @@ class RandomQuoteWidget extends StatelessWidget {
           // 1. Đang tải
           QuoteLoading() => const Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(AppDimens.s16),
               child: CircularProgressIndicator(),
             ),
           ),
 
           // 2. Tải thành công
-          QuoteSuccess() => Card(
-            elevation: 2,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    '"${state.quote.quote}"',
-                    textAlign: TextAlign.center,
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '— ${state.quote.author}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          QuoteSuccess() => _QuoteCard(state: state),
 
           // 3. Bị lỗi
           QuoteFailure(failure: final failure) => AppErrorView(
@@ -68,6 +41,82 @@ class RandomQuoteWidget extends StatelessWidget {
           QuoteInitial() => const SizedBox.shrink(),
         };
       },
+    );
+  }
+}
+
+class _QuoteCard extends StatelessWidget {
+  final QuoteSuccess state;
+
+  const _QuoteCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: AppDimens.s16),
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimens.s16),
+        child: Column(
+          children: [
+            Text(
+              '"${state.quote.quote}"',
+              textAlign: TextAlign.center,
+              style: context.text.body1.copyWith(fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: AppDimens.s12),
+            Text(
+              '— ${state.quote.author}',
+              style: context.text.body2.copyWith(
+                fontWeight: FontWeight.bold,
+                color: context.colors.primary,
+              ),
+            ),
+            const SizedBox(height: AppDimens.s16),
+            _buildTranslateSection(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTranslateSection(BuildContext context) {
+    if (state.translatedQuote != null) {
+      return Column(
+        children: [
+          const Divider(),
+          const SizedBox(height: AppDimens.s8),
+          const Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppDimens.s8,
+            children: [AppBadge(label: 'Gemini AI')],
+          ),
+          const SizedBox(height: AppDimens.s8),
+          Text(
+            state.translatedQuote!,
+            textAlign: TextAlign.center,
+            style: context.text.body2.copyWith(
+              color: context.colors.textSecondary,
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (state.translateFailure != null) {
+      return AppErrorView(
+        failure: state.translateFailure!,
+        onRetry: () =>
+            unawaited(context.read<QuoteCubit>().translateQuote()),
+      );
+    }
+
+    return AppButton(
+      text: 'Dịch sang Tiếng Việt',
+      icon: Icons.translate,
+      isExpanded: false,
+      isLoading: state.isTranslating,
+      onPressed: () => unawaited(context.read<QuoteCubit>().translateQuote()),
     );
   }
 }

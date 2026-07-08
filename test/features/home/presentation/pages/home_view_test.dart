@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reqres_in/src/core/ai/translation_service.dart';
 import 'package:reqres_in/src/core/ui/theme/app_theme.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
 import 'package:reqres_in/src/features/home/presentation/pages/home_view.dart';
@@ -9,6 +10,8 @@ import 'package:reqres_in/src/features/quote/cubit/quote_cubit.dart';
 import 'package:reqres_in/src/features/quote/repositories/quote_repository.dart';
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
+
+class MockTranslationService extends Mock implements TranslationService {}
 
 void main() {
   const userData = LoginResponse(
@@ -26,7 +29,10 @@ void main() {
   testWidgets(
     'hiển thị đúng tên/username của userData và nhúng RandomQuoteWidget',
     (tester) async {
-      final quoteCubit = QuoteCubit(MockQuoteRepository());
+      final quoteCubit = QuoteCubit(
+        MockQuoteRepository(),
+        MockTranslationService(),
+      );
       addTearDown(quoteCubit.close);
 
       await tester.pumpWidget(

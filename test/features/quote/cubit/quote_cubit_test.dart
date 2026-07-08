@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reqres_in/src/core/ai/translation_service.dart';
 import 'package:reqres_in/src/core/network/failures.dart';
 import 'package:reqres_in/src/features/quote/cubit/quote_cubit.dart';
 import 'package:reqres_in/src/features/quote/models/quote_model.dart';
@@ -9,8 +10,11 @@ import 'package:reqres_in/src/features/quote/repositories/quote_repository.dart'
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
 
+class MockTranslationService extends Mock implements TranslationService {}
+
 void main() {
   late MockQuoteRepository repository;
+  late MockTranslationService translationService;
 
   const quote = QuoteModel(
     id: 1,
@@ -20,6 +24,7 @@ void main() {
 
   setUp(() {
     repository = MockQuoteRepository();
+    translationService = MockTranslationService();
   });
 
   group('QuoteCubit', () {
@@ -29,7 +34,7 @@ void main() {
         when(() => repository.getRandomQuote()).thenAnswer(
           (_) async => const Right(quote),
         );
-        return QuoteCubit(repository);
+        return QuoteCubit(repository, translationService);
       },
       act: (cubit) => cubit.fetchRandomQuote(),
       expect: () => [isA<QuoteLoading>(), const QuoteSuccess(quote)],
@@ -42,7 +47,7 @@ void main() {
           (_) async =>
               const Right(QuoteModel(id: 2, quote: '   ', author: 'Nobody')),
         );
-        return QuoteCubit(repository);
+        return QuoteCubit(repository, translationService);
       },
       act: (cubit) => cubit.fetchRandomQuote(),
       expect: () => [isA<QuoteLoading>(), isA<QuoteEmpty>()],
@@ -54,7 +59,7 @@ void main() {
         when(() => repository.getRandomQuote()).thenAnswer(
           (_) async => const Left(ConnectionFailure.noInternet),
         );
-        return QuoteCubit(repository);
+        return QuoteCubit(repository, translationService);
       },
       act: (cubit) => cubit.fetchRandomQuote(),
       expect: () => [
@@ -63,6 +68,31 @@ void main() {
           (s) => s.failure,
           'failure',
           isA<ConnectionFailure>(),
+        ),
+      ],
+    );
+
+    blocTest<QuoteCubit, QuoteState>(
+      'translateQuote thành công → QuoteSuccess kèm translatedQuote',
+      build: () {
+        when(() => repository.getRandomQuote()).thenAnswer(
+          (_) async => const Right(quote),
+        );
+        when(() => translationService.translate(text: quote.quote)).thenAnswer(
+          (_) async => const Right('Hãy đói khát, hãy dại khờ.'),
+        );
+        return QuoteCubit(repository, translationService);
+      },
+      act: (cubit) async {
+        await cubit.fetchRandomQuote();
+        await cubit.translateQuote();
+      },
+      skip: 2,
+      expect: () => [
+        const QuoteSuccess(quote, isTranslating: true),
+        const QuoteSuccess(
+          quote,
+          translatedQuote: 'Hãy đói khát, hãy dại khờ.',
         ),
       ],
     );

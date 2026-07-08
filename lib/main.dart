@@ -1,10 +1,14 @@
 import 'dart:async'; // Để dùng unawaited
 
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 // ✅ Gom nhóm import Core
+import 'package:reqres_in/firebase_options.dart';
 import 'package:reqres_in/src/core/di/injection.dart'; // Bỏ alias 'as di' nếu không bị trùng tên
 import 'package:reqres_in/src/core/error/error.dart';
 import 'package:reqres_in/src/core/logging/app_logger.dart';
@@ -24,6 +28,21 @@ void main() async {
   AppLogger.info('🦀 Khởi tạo Rust bridge...', tag: 'Main');
   await RustLib.init();
   AppLogger.info('✅ Rust bridge sẵn sàng', tag: 'Main');
+
+  // 0.1. Khởi tạo Firebase (bắt buộc trước khi dùng FirebaseAiTranslationService).
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 0.2. Kích hoạt App Check — bắt buộc để Firebase AI Logic chấp nhận request.
+  // Debug provider ở debug mode (in token ra logcat, cần đăng ký thủ công vào
+  // Firebase Console 1 lần). Bản release dùng Play Integrity/App Attest thật.
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: kDebugMode
+        ? const AndroidDebugProvider()
+        : const AndroidPlayIntegrityProvider(),
+    providerApple: kDebugMode
+        ? const AppleDebugProvider()
+        : const AppleAppAttestProvider(),
+  );
 
   // 1. Cấu hình DI (Blocking - Bắt buộc chờ vì các màn hình sau cần nó)
   await configureDependencies();
