@@ -11,6 +11,7 @@ flutter_rust_bridge = "=2.11.1"
 aes-gcm = "0.10"
 rand = "0.8"
 base64 = "0.22"
+argon2 = "0.5"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 // ✅ Gom nhóm import Core
 import 'package:reqres_in/src/core/di/injection.dart'; // Bỏ alias 'as di' nếu không bị trùng tên
 import 'package:reqres_in/src/core/error/error.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 import 'package:reqres_in/src/core/pdf/infrastructure/pdf_font_helper.dart';
 import 'package:reqres_in/src/core/ui/ui.dart';
 
@@ -20,7 +21,9 @@ void main() async {
 
   // 0. Khởi tạo Rust bridge (bắt buộc trước khi gọi bất kỳ hàm Rust nào,
   // ví dụ RustCryptoService dùng để mã hoá dữ liệu trong SecureStorageService).
+  AppLogger.info('🦀 Khởi tạo Rust bridge...', tag: 'Main');
   await RustLib.init();
+  AppLogger.info('✅ Rust bridge sẵn sàng', tag: 'Main');
 
   // 1. Cấu hình DI (Blocking - Bắt buộc chờ vì các màn hình sau cần nó)
   await configureDependencies();

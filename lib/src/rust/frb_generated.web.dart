@@ -6,7 +6,9 @@
 // Static analysis wrongly picks the IO variant, thus ignore this
 // ignore_for_file: argument_type_not_assignable
 
+import 'api/benchmark.dart';
 import 'api/crypto.dart';
+import 'api/kdf.dart';
 import 'api/simple.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -25,7 +27,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  FibBenchmarkResult dco_decode_fib_benchmark_result(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  int dco_decode_u_32(dynamic raw);
+
+  @protected
+  BigInt dco_decode_u_64(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -37,7 +48,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  FibBenchmarkResult sse_decode_fib_benchmark_result(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer);
+
+  @protected
+  BigInt sse_decode_u_64(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -55,10 +77,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_fib_benchmark_result(
+    FibBenchmarkResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_64(BigInt self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);

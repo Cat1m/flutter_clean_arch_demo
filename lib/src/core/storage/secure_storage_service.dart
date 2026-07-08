@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/crypto/rust_crypto_service.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 import 'package:reqres_in/src/features/auth/models/auth_models.dart';
+
+const _tag = 'SecureStorageService';
 
 // Định nghĩa các key chúng ta sẽ dùng
 // Dùng const giúp tránh lỗi gõ nhầm
@@ -32,6 +35,7 @@ class SecureStorageService {
 
   // --- User Token ---
   Future<void> saveUserToken(String token) async {
+    AppLogger.debug('💾 Lưu user token (đã mã hoá)', tag: _tag);
     final encrypted = await _cryptoService.encrypt(token);
     await _storage.write(key: _StorageKeys.userToken, value: encrypted);
   }
@@ -40,6 +44,7 @@ class SecureStorageService {
 
   // --- Refresh Token (Cho tương lai) ---
   Future<void> saveRefreshToken(String token) async {
+    AppLogger.debug('💾 Lưu refresh token (đã mã hoá)', tag: _tag);
     final encrypted = await _cryptoService.encrypt(token);
     await _storage.write(key: _StorageKeys.refreshToken, value: encrypted);
   }
@@ -48,6 +53,7 @@ class SecureStorageService {
       _readAndDecrypt(_StorageKeys.refreshToken);
 
   Future<void> saveUserData(LoginResponse response) async {
+    AppLogger.debug('💾 Lưu user data (đã mã hoá)', tag: _tag);
     // Chuyển đối tượng LoginResponse thành JSON string rồi mã hoá
     final jsonString = jsonEncode(response.toJson());
     final encrypted = await _cryptoService.encrypt(jsonString);
@@ -68,9 +74,19 @@ class SecureStorageService {
   Future<String?> _readAndDecrypt(String key) async {
     try {
       final encrypted = await _storage.read(key: key);
-      if (encrypted == null || encrypted.isEmpty) return null;
-      return await _cryptoService.decrypt(encrypted);
-    } on Object {
+      if (encrypted == null || encrypted.isEmpty) {
+        AppLogger.debug('📭 Chưa có dữ liệu cho "$key"', tag: _tag);
+        return null;
+      }
+      final result = await _cryptoService.decrypt(encrypted);
+      AppLogger.debug('📬 Đọc + giải mã "$key" thành công', tag: _tag);
+      return result;
+    } on Object catch (e) {
+      // Dữ liệu plaintext cũ (trước khi có mã hoá) hoặc ciphertext hỏng.
+      AppLogger.warning(
+        '⚠️ Giải mã "$key" thất bại ($e) — tự xoá dữ liệu hỏng',
+        tag: _tag,
+      );
       await _storage.delete(key: key);
       return null;
     }
@@ -78,6 +94,7 @@ class SecureStorageService {
 
   // --- Xóa Token (Khi logout) ---
   Future<void> clearAllTokens() async {
+    AppLogger.info('🧹 Xoá toàn bộ token/user data', tag: _tag);
     // Xóa từng key một
     await _storage.delete(key: _StorageKeys.userToken);
     await _storage.delete(key: _StorageKeys.refreshToken);

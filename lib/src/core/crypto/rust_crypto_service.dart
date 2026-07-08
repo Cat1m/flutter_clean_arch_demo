@@ -1,6 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reqres_in/src/core/logging/app_logger.dart';
 import 'package:reqres_in/src/rust/api/crypto.dart' as rust_crypto;
+
+const _tag = 'RustCryptoService';
 
 // Key lưu khoá master AES, tách riêng khỏi SecureStorageService
 // để tránh phụ thuộc vòng (SecureStorageService sẽ dùng service này).
@@ -25,17 +28,24 @@ class RustCryptoService {
     String? key;
     try {
       key = await _storage.read(key: _CryptoStorageKeys.encryptionKey);
-    } on Object {
+    } on Object catch (e) {
       // Ciphertext của flutter_secure_storage bị hỏng (đổi Keystore, cài lại
       // app, v.v.) — coi như chưa từng có khoá, sinh khoá mới thay vì crash.
+      AppLogger.warning(
+        '⚠️ Đọc khoá master thất bại, sẽ sinh khoá mới: $e',
+        tag: _tag,
+      );
       key = null;
     }
     if (key == null) {
+      AppLogger.info('🔑 Chưa có khoá master, sinh khoá AES-256 mới', tag: _tag);
       key = rust_crypto.generateKey();
       await _storage.write(
         key: _CryptoStorageKeys.encryptionKey,
         value: key,
       );
+    } else {
+      AppLogger.debug('🔑 Dùng khoá master đã lưu', tag: _tag);
     }
     _cachedKey = key;
     return key;
@@ -43,11 +53,18 @@ class RustCryptoService {
 
   Future<String> encrypt(String plaintext) async {
     final key = await _getOrCreateKey();
-    return rust_crypto.encrypt(keyB64: key, plaintext: plaintext);
+    final encrypted = rust_crypto.encrypt(keyB64: key, plaintext: plaintext);
+    AppLogger.debug(
+      '🔒 Encrypt ${plaintext.length} ký tự → payload ${encrypted.length} ký tự',
+      tag: _tag,
+    );
+    return encrypted;
   }
 
   Future<String> decrypt(String payload) async {
     final key = await _getOrCreateKey();
-    return rust_crypto.decrypt(keyB64: key, payloadB64: payload);
+    final decrypted = rust_crypto.decrypt(keyB64: key, payloadB64: payload);
+    AppLogger.debug('🔓 Decrypt thành công (${decrypted.length} ký tự)', tag: _tag);
+    return decrypted;
   }
 }

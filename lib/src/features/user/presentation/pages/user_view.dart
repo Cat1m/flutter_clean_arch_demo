@@ -7,6 +7,7 @@ import 'package:reqres_in/src/core/ui/ui.dart';
 import 'package:reqres_in/src/features/user/models/user_model.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_cubit.dart';
 import 'package:reqres_in/src/features/user/presentation/bloc/user_state.dart';
+import 'package:reqres_in/src/features/user/presentation/widgets/pin_locked_wallet_tile.dart';
 
 class UserView extends StatelessWidget {
   const UserView({super.key});
@@ -179,7 +180,7 @@ class UserView extends StatelessWidget {
         leading: const Icon(Icons.currency_bitcoin),
         children: [
           _InfoTile(title: 'Coin', value: crypto.coin),
-          _InfoTile(title: 'Ví', value: crypto.wallet),
+          PinLockedWalletTile(walletValue: crypto.wallet),
           _InfoTile(title: 'Mạng lưới', value: crypto.network),
         ],
       ),

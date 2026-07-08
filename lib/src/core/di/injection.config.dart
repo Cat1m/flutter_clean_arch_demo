@@ -29,6 +29,7 @@ import '../../shared/data/remote/file_upload_service.dart' as _i931;
 import '../../shared/theme/theme_cubit.dart' as _i0;
 import '../auth/interceptors/auth_interceptor.dart' as _i164;
 import '../auth/interceptors/token_interceptor.dart' as _i823;
+import '../crypto/pin_lock_service.dart' as _i1008;
 import '../crypto/rust_crypto_service.dart' as _i763;
 import '../error/error_cubit.dart' as _i538;
 import '../error/error_event_service.dart' as _i860;
@@ -53,6 +54,7 @@ extension GetItInjectableX on _i174.GetIt {
     final registerModule = _$RegisterModule();
     final routerModule = _$RouterModule();
     gh.singleton<_i589.PdfFontHelper>(() => registerModule.pdfFontHelper);
+    gh.lazySingleton<_i1008.PinLockService>(() => _i1008.PinLockService());
     gh.lazySingleton<_i763.RustCryptoService>(() => _i763.RustCryptoService());
     await gh.lazySingletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,
