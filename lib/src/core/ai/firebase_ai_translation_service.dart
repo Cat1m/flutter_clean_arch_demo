@@ -2,6 +2,7 @@
 
 import 'package:dartz/dartz.dart';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reqres_in/src/core/ai/translation_prompt.dart';
 import 'package:reqres_in/src/core/ai/translation_service.dart';
@@ -35,7 +36,8 @@ class FirebaseAiTranslationService implements TranslationService {
       return Left(ServerFailure('Firebase AI Logic chưa được bật: ${e.message}'));
     } on FirebaseAIException catch (e) {
       return Left(ServerFailure(e.toString()));
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[FirebaseAiTranslationService] LỖI THẬT: $e\n$st');
       return Left(ConnectionFailure('Không thể kết nối Firebase AI: $e'));
     }
   }

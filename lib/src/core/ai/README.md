@@ -86,6 +86,51 @@ thêm ở Firebase Console: **Project Settings → app Android → Add fingerpri
 → dán **SHA-256** của keystore dùng để ký bản release. Thiếu bước này sẽ gặp
 lại đúng lỗi App Check token invalid, nhưng vì lý do khác (thiếu fingerprint).
 
+Sau khi thêm fingerprint, còn cần vào **App Check → Apps → Register** app
+Android, chọn provider **Play Integrity** (bước riêng, không tự động dù đã
+thêm fingerprint ở Project Settings).
+
+### 3.3. Giới hạn đã gặp: sideload không đủ để test Play Integrity thật
+
+Đã làm đúng cả 2 bước ở 3.2 (fingerprint đúng + Register Play Integrity), build
+release, cài qua `adb install` — Play Integrity **vẫn sinh token thành công ở
+phía máy** (log native `IntegrityService: requestIntegrityToken` không lỗi),
+nhưng Firebase App Check backend từ chối với:
+
+```
+[firebase_app_check/unknown] Error returned from API. code: 403 body: App attestation failed.
+```
+
+Nguyên nhân: Play Integrity cần Google Play "nhận diện" app để verdict hợp lệ.
+App cài qua `adb install`/sideload thuần (không qua Play) thường bị đánh giá
+"app không được nhận diện" → App Check reject dù token sinh ra không lỗi cú
+pháp. Sau vài lần 403 liên tiếp, App Check SDK tự backoff (log thấy
+"Too many attempts"), không gọi lại API cho tới khi hết thời gian chờ — không
+phải app bị lỗi thêm, chỉ là cơ chế chống rate-limit của SDK.
+
+**Kế hoạch để test Play Integrity thật (làm sau khi có Play Console account):**
+1. Đăng ký Google Play Console developer account (phí $25 một lần).
+2. Tạo app entry cho `com.example.reqres_in` trên Play Console (chưa cần
+   public, có thể để ở trạng thái draft).
+3. Dùng 1 trong 2 cách để cài app qua kênh Play (thoả điều kiện Play Integrity
+   nhận diện được):
+   - **Internal testing track**: upload AAB (`flutter build appbundle
+     --release`), thêm tester bằng email, cài qua link Play Store dành cho
+     tester.
+   - **Internal app sharing**: nhanh hơn, không cần review, upload APK/AAB lấy
+     link cài trực tiếp — vẫn đi qua hạ tầng Play nên Play Integrity nhận diện
+     được.
+4. Cài lại app qua 1 trong 2 link trên (gỡ bản sideload cũ trước để tránh lỗi
+   signature mismatch), test lại tính năng dịch quote.
+5. Nếu vẫn lỗi, kiểm tra thêm: project Firebase và Play Console phải cùng
+   liên kết (Play Console → Setup → App integrity → xác nhận Cloud project
+   number khớp với Firebase project).
+
+Code hiện tại (`firebase_ai_translation_service.dart`) đang có tạm 1 dòng
+`debugPrint` trong `catch (e)` để lộ lỗi thật ra logcat khi debug — nên xoá đi
+khi vấn đề trên đã được xác nhận fix xong, tránh log rò rỉ chi tiết lỗi backend
+trong bản release chính thức.
+
 ---
 
 ## 4. Model & chi phí
