@@ -45,7 +45,8 @@ flutter_rust_bridge_codegen generate
 - **`auth/`** — Bearer token auth. `TokenInterceptor` handles 401→refresh→retry with a separate Dio instance to avoid loops. `AuthEventService` broadcasts session expiration via streams.
 - **`navigation/`** — GoRouter with auth-based redirects. Listens to `LoginCubit` via `StreamListenable` adapter.
 - **`env/`** — Uses `envied` package. Secrets in `.env` file (git-ignored), accessed via generated `Env` class.
-- **`storage/`** — `SecureStorageService` (tokens) and `SettingsService` (SharedPreferences).
+- **`storage/`** — `SecureStorageService` (tokens, encrypted via `RustCryptoService`) and `SettingsService` (SharedPreferences).
+- **`crypto/`** — `RustCryptoService` (AES-256-GCM at rest, backs `SecureStorageService`) and `PinLockService` (PIN + Argon2 key derivation). See `rust/README.md`.
 - **`pdf/`** — Standalone PDF module with domain/infrastructure/presentation layers. Uses `pdf` package for generation, Syncfusion for viewing.
 - **`ui/`** — App theme (light/dark), colors, text styles, dimensions, shared widgets.
 
@@ -67,7 +68,11 @@ Five generators are active — after modifying annotated classes, always run `bu
 
 ## Rust Integration
 
-`flutter_rust_bridge` bridges Rust code (`rust/src/`) to Dart (`lib/src/rust/`). Build handled by `cargokit` in `rust_builder/`. Config in `flutter_rust_bridge.yaml`.
+`flutter_rust_bridge` bridges Rust code (`rust/src/`) to Dart (`lib/src/rust/`). Build handled by `cargokit` in `rust_builder/`. Config in `flutter_rust_bridge.yaml`. Full docs, structure, and gotchas: `rust/README.md`.
+
+Three demo features live here: AES-256-GCM encryption for `SecureStorageService`, PIN+Argon2 key derivation (`PinLockService`), and a Dart-vs-Rust Fibonacci benchmark (`/rust-benchmark`).
+
+**Important:** `cargokit` builds Rust in the same profile as Flutter — `flutter run` (debug) builds Rust unoptimized, so Rust can appear *slower* than Dart there. Only `flutter run --release` reflects real Rust performance. Also: never mark a slow Rust function `#[frb(sync)]` (blocks the Dart UI thread) — only fast functions (AES-GCM, key/salt generation) should be sync; anything CPU-heavy (Argon2, benchmarks) should stay async.
 
 ## Shared API Service
 

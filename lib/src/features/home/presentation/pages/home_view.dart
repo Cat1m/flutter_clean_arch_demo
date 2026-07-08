@@ -33,6 +33,11 @@ class HomeView extends StatelessWidget {
             onPressed: () => context.push('/pdf-test'), // Điều hướng
           ),
           IconButton(
+            icon: const Icon(Icons.speed),
+            tooltip: 'Benchmark Dart vs Rust',
+            onPressed: () => context.push('/rust-benchmark'),
+          ),
+          IconButton(
             icon: const Icon(Icons.brightness_6_outlined),
             tooltip: 'Đổi sáng/tối',
             onPressed: () {

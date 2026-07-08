@@ -16,6 +16,7 @@ import 'package:reqres_in/src/features/auth/presentation/bloc/login_cubit.dart';
 import 'package:reqres_in/src/features/auth/presentation/pages/login_page.dart';
 import 'package:reqres_in/src/features/auth/presentation/pages/session_expired_page.dart';
 import 'package:reqres_in/src/features/auth/presentation/pages/splash_page.dart';
+import 'package:reqres_in/src/features/benchmark/presentation/pages/benchmark_page.dart';
 import 'package:reqres_in/src/features/home/presentation/pages/home_page.dart';
 import 'package:reqres_in/src/features/pdf_test/presentation/pages/pdf_test_page.dart';
 import 'package:reqres_in/src/features/user/presentation/pages/user_page.dart';
@@ -66,6 +67,10 @@ abstract class RouterModule {
         GoRoute(
           path: '/pdf-test',
           builder: (context, state) => const PdfTestPage(),
+        ),
+        GoRoute(
+          path: '/rust-benchmark',
+          builder: (context, state) => const BenchmarkPage(),
         ),
         // Debug Error Bus — chỉ hiện trong debug mode
         if (kDebugMode)
